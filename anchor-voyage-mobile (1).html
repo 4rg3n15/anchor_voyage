@@ -1,0 +1,2561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#060B14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Anchor Voyage</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --abyss:#060B14; --hull:#0B1424; --deck:#122038; --deck-2:#16284a;
+    --line:rgba(120,180,255,.10); --line-2:rgba(120,180,255,.18);
+    --glow:#2DE2E6; --glow-dim:#1593a0;
+    --amber:#F5A623; --profit:#3FE08D; --loss:#FF5C7A;
+    --ink:#E8F0FF; --ink-dim:#90A4C6; --ink-faint:#56698C;
+    /* structural (themeable) */
+    --grad-1:#0a1830; --panel-2:#0a1322; --bar:rgba(6,11,20,.82); --chip:rgba(18,32,56,.5);
+    --map-bg:#060B14; --home-grad:#0c1c38;
+    --tile-filter:saturate(.55) brightness(.62) contrast(1.05) hue-rotate(8deg);
+    --theme-color:#060B14;
+    --display:'Space Grotesk',system-ui,-apple-system,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --r:14px; --nav-h:60px; --top-h:54px;
+  }
+  /* ===================== LIGHT THEME ===================== */
+  :root[data-theme="light"]{
+    --abyss:#EAEFF6; --hull:#FFFFFF; --deck:#F1F5FA; --deck-2:#E2EAF4;
+    --line:rgba(20,48,86,.12); --line-2:rgba(20,48,86,.20);
+    --glow:#0A8FA0; --glow-dim:#0a6b78;
+    --amber:#BC720A; --profit:#0E8F5E; --loss:#D63B5E;
+    --ink:#0C1A2E; --ink-dim:#43576F; --ink-faint:#74879F;
+    --grad-1:#dde8f4; --panel-2:#f5f8fd; --bar:rgba(255,255,255,.85); --chip:rgba(20,48,86,.06);
+    --map-bg:#dce6f1; --home-grad:#d6e3f3;
+    --tile-filter:saturate(.95) brightness(1.01) contrast(.98);
+    --theme-color:#EAEFF6;
+  }
+  :root[data-theme="light"] .panel::before{opacity:.32}
+  :root[data-theme="light"] .leaflet-popup-content-wrapper,
+  :root[data-theme="light"] .leaflet-popup-tip{box-shadow:0 8px 30px rgba(20,48,86,.18)}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;background:var(--abyss);color:var(--ink);
+    font-family:var(--display);overscroll-behavior:none;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  body{font-size:15px;line-height:1.45}
+  button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none}
+  input,select{font-family:var(--mono);color:var(--ink)}
+  ::selection{background:var(--glow);color:#04121a}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1}
+
+  /* ---- shell ---- */
+  #app{height:100%;display:flex;flex-direction:column;max-width:520px;margin:0 auto;position:relative;
+    background:radial-gradient(140% 90% at 50% -10%,var(--grad-1) 0%,var(--abyss) 55%)}
+  .topbar{height:calc(var(--top-h) + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);
+    display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:14px;
+    border-bottom:1px solid var(--line);background:var(--bar);backdrop-filter:blur(14px);
+    position:relative;z-index:30;flex:0 0 auto}
+  .brand{display:flex;align-items:center;gap:9px}
+  .beacon{width:11px;height:11px;border-radius:50%;background:var(--glow);
+    box-shadow:0 0 0 0 rgba(45,226,230,.6);animation:pulse 2.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(45,226,230,.55)}70%{box-shadow:0 0 0 9px rgba(45,226,230,0)}100%{box-shadow:0 0 0 0 rgba(45,226,230,0)}}
+  .brand h1{font-size:14px;letter-spacing:.16em;font-weight:600;margin:0;text-transform:uppercase}
+  .brand h1 b{color:var(--glow);font-weight:700}
+  .ctx-chip{font-family:var(--mono);font-size:11px;color:var(--ink-dim);border:1px solid var(--line-2);
+    padding:5px 9px;border-radius:20px;max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    background:var(--chip)}
+  .ctx-chip b{color:var(--ink)}
+  .top-right{display:flex;align-items:center;gap:8px;min-width:0}
+  .icon-btn{width:34px;height:34px;min-width:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line-2);background:var(--chip);color:var(--ink-dim);font-size:15px;line-height:1;transition:.15s;flex:0 0 auto}
+  .icon-btn:hover{color:var(--ink)}
+  .icon-btn:active{background:var(--deck-2);color:var(--glow);transform:scale(.94)}
+
+  .content{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
+  .screen{display:none;padding:16px 14px calc(var(--nav-h) + env(safe-area-inset-bottom) + 18px)}
+  .screen.active{display:block;animation:fade .25s ease}
+  #screen-map.active{display:block;padding:0}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* ---- bottom nav ---- */
+  .nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);display:flex;border-top:1px solid var(--line);
+    background:var(--bar);backdrop-filter:blur(16px);z-index:40}
+  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    color:var(--ink-faint);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+    transition:color .15s;position:relative}
+  .nav button svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none}
+  .nav button.on{color:var(--glow)}
+  .nav button.on::before{content:"";position:absolute;top:0;width:26px;height:2px;border-radius:2px;
+    background:var(--glow);box-shadow:0 0 8px var(--glow)}
+
+  /* ---- cards / panels ---- */
+  .panel{background:linear-gradient(180deg,var(--hull),var(--panel-2));border:1px solid var(--line);border-radius:var(--r);
+    padding:15px;margin-bottom:13px;position:relative;overflow:hidden}
+  .panel::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:26px 26px;mask:linear-gradient(180deg,rgba(0,0,0,.25),transparent 60%)}
+  .panel>*{position:relative}
+  .eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;
+    display:flex;align-items:center;gap:8px;margin:0 0 12px}
+  .eyebrow .tick{width:14px;height:1px;background:var(--glow-dim)}
+  .eyebrow.accent{color:var(--glow)}
+
+  label.fld{display:block;margin-bottom:13px}
+  label.fld>span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);
+    margin-bottom:6px;font-weight:500}
+  .input,select.input{width:100%;background:var(--deck);border:1px solid var(--line-2);border-radius:10px;
+    padding:11px 12px;font-size:16px;outline:none;transition:border-color .15s,box-shadow .15s;
+    -webkit-appearance:none;appearance:none}
+  .input:focus,select.input:focus{border-color:var(--glow);box-shadow:0 0 0 3px rgba(45,226,230,.13)}
+  select.input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%2390A4C6' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .stepper{display:flex;align-items:stretch;gap:0;background:var(--deck);border:1px solid var(--line-2);border-radius:10px;overflow:hidden}
+  .stepper input{flex:1;background:transparent;border:none;text-align:center;font-size:17px;font-weight:600;padding:11px 4px;min-width:0}
+  .stepper button{width:34px;color:var(--ink-dim);font-size:17px;font-weight:600;background:rgba(45,226,230,.05)}
+  .stepper button:active{background:rgba(45,226,230,.18);color:var(--glow)}
+  .stepper .div{width:1px;background:var(--line-2)}
+
+  /* chips */
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;margin:0 -2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:8px 13px;border:1px solid var(--line-2);border-radius:20px;font-size:12.5px;
+    color:var(--ink-dim);background:var(--deck);white-space:nowrap;transition:.15s;font-family:var(--mono);font-weight:500}
+  .chip.on{border-color:var(--glow);color:var(--glow);background:rgba(45,226,230,.1);box-shadow:0 0 14px rgba(45,226,230,.12)}
+
+  /* ---- result readouts ---- */
+  .hero-tce{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:4px}
+  .hero-tce .big{font-family:var(--mono);font-size:38px;font-weight:700;line-height:1;letter-spacing:-.01em}
+  .hero-tce .unit{font-size:13px;color:var(--ink-dim);font-family:var(--mono);padding-bottom:5px}
+  .pos{color:var(--profit)} .neg{color:var(--loss)}
+  .profit-line{font-family:var(--mono);font-size:13px;color:var(--ink-dim);margin-top:2px}
+  .profit-line b{font-weight:600}
+
+  .kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;margin-top:12px}
+  .kv{background:var(--hull);padding:11px 12px}
+  .kv .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:4px}
+  .kv .v{font-family:var(--mono);font-size:16px;font-weight:600}
+  .kv .v.sm{font-size:14px}
+
+  /* freight waterfall (gross → commissions → net) */
+  .frt-grid{margin:13px 0 4px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .frt-row{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:var(--hull);
+    font-size:12px;color:var(--ink-dim);border-top:1px solid var(--line)}
+  .frt-row:first-child{border-top:none}
+  .frt-row b{font-family:var(--mono);font-size:14px;color:var(--ink);font-weight:600}
+  .frt-row .neg{color:var(--loss)}
+  .frt-row.net{background:rgba(63,224,141,.09)}
+  .frt-row.net span{color:var(--profit);font-weight:500}
+  .frt-row.net b{color:var(--profit);font-size:15px}
+
+  /* cost bar */
+  .costbar{height:9px;border-radius:6px;overflow:hidden;display:flex;margin:10px 0 8px;background:var(--deck)}
+  .costbar i{display:block;height:100%}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:11.5px;color:var(--ink-dim);font-family:var(--mono)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+
+  /* tables */
+  table.tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+  table.tbl th{font-family:var(--display);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);
+    text-align:right;padding:6px 6px;font-weight:600;border-bottom:1px solid var(--line-2)}
+  table.tbl th:first-child{text-align:left}
+  table.tbl td{text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+  table.tbl td:first-child{text-align:left;color:var(--ink-dim)}
+  table.tbl tr.cur td{background:rgba(45,226,230,.08)}
+  table.tbl tr.cur td:first-child{color:var(--glow);position:relative}
+  table.tbl tr.cur td:first-child::before{content:"▸ ";color:var(--glow)}
+
+  /* negotiation card */
+  .neg-card{background:linear-gradient(135deg,rgba(245,166,35,.12),rgba(245,166,35,.03));
+    border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:13px;margin-top:12px}
+  .neg-card .nl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0}
+  .neg-card .nl+.nl{border-top:1px dashed rgba(245,166,35,.22)}
+  .neg-card .nl .t{font-size:12px;color:var(--ink-dim)}
+  .neg-card .nl .a{font-family:var(--mono);font-weight:700;color:var(--amber);font-size:15px;white-space:nowrap}
+
+  /* comparison list */
+  .cmp{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line-2);border-radius:12px;
+    background:var(--deck);margin-bottom:9px;position:relative;overflow:hidden}
+  .cmp.best{border-color:var(--profit);box-shadow:0 0 18px rgba(63,224,141,.1)}
+  .cmp .rank{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink-faint);width:20px;flex:0 0 auto}
+  .cmp.best .rank{color:var(--profit)}
+  .cmp .body{flex:1;min-width:0}
+  .cmp .body .nm{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cmp .body .sub{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:2px}
+  .cmp .figs{text-align:right;flex:0 0 auto}
+  .cmp .figs .tce{font-family:var(--mono);font-size:15px;font-weight:700}
+  .cmp .figs .pf{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);margin-top:2px}
+  .cmp .spark{position:absolute;left:0;bottom:0;height:3px;background:var(--glow-dim);opacity:.5}
+
+  /* ballast gauge */
+  .gauge-wrap{display:flex;align-items:center;gap:18px;margin-top:6px}
+  .gauge{position:relative;width:96px;height:96px;flex:0 0 auto}
+  .gauge svg{transform:rotate(-90deg)}
+  .gauge .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .gauge .num b{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1}
+  .gauge .num small{font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:uppercase;margin-top:3px}
+
+  /* AI panel */
+  .ai-panel{border:1px solid var(--line-2);border-radius:14px;background:
+    radial-gradient(120% 100% at 100% 0%,rgba(45,226,230,.07),transparent 60%),var(--hull);padding:15px;margin-bottom:13px}
+  .ai-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .ai-head .l{display:flex;align-items:center;gap:9px;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--glow);font-weight:600}
+  .ai-orb{width:16px;height:16px;border-radius:50%;background:conic-gradient(from 0deg,var(--glow),#7af,#2DE2E6);
+    box-shadow:0 0 10px rgba(45,226,230,.5);position:relative}
+  .ai-orb::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--hull)}
+  .btn-ai{font-size:11px;font-family:var(--mono);color:var(--glow);border:1px solid var(--glow-dim);border-radius:18px;
+    padding:6px 12px;background:rgba(45,226,230,.06);display:flex;align-items:center;gap:6px;transition:.15s}
+  .btn-ai:active{background:rgba(45,226,230,.18)}
+  .btn-ai:disabled{opacity:.5;color:var(--ink-faint);border-color:var(--line-2)}
+  .ai-body p{margin:0 0 9px;font-size:13.5px;line-height:1.55;color:var(--ink);padding-left:14px;position:relative}
+  .ai-body p::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--glow-dim)}
+  .ai-body p:last-child{margin-bottom:0}
+  .ai-body p b{color:var(--glow);font-weight:600}
+  .ai-src{font-size:10px;font-family:var(--mono);color:var(--ink-faint);margin-top:10px;letter-spacing:.05em}
+  .spin{width:13px;height:13px;border:2px solid rgba(45,226,230,.25);border-top-color:var(--glow);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* map */
+  #map{position:absolute;inset:0;background:var(--map-bg);z-index:1}
+  .leaflet-container{background:var(--map-bg);font-family:var(--mono)}
+  .leaflet-tile{filter:var(--tile-filter)}
+  .leaflet-control-zoom{display:none}
+  .leaflet-popup-content-wrapper{background:var(--deck);color:var(--ink);border:1px solid var(--line-2);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .leaflet-popup-tip{background:var(--deck);border:1px solid var(--line-2)}
+  .leaflet-popup-content{margin:11px 13px;font-family:var(--display)}
+  .pop-nm{font-size:13px;font-weight:600;margin-bottom:2px}
+  .pop-rg{font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-bottom:9px;letter-spacing:.05em}
+  .pop-btns{display:flex;gap:7px}
+  .pop-btns button{flex:1;font-size:11px;font-family:var(--mono);padding:7px;border-radius:7px;border:1px solid var(--line-2);background:var(--hull);transition:.15s}
+  .pop-btns button.load:active{background:rgba(45,226,230,.2);border-color:var(--glow);color:var(--glow)}
+  .pop-btns button.disch:active{background:rgba(63,224,141,.2);border-color:var(--profit);color:var(--profit)}
+  .pop-btns button.orig:active{background:rgba(255,92,122,.2);border-color:var(--loss);color:var(--loss)}
+  /* role-based port markers — load hubs shine brightest, discharge dimmer/green, hubs amber */
+  .port-dot{border-radius:50%;border:1.5px solid #061018;position:relative}
+  .port-dot.role-D{width:8px;height:8px;background:var(--profit);
+    box-shadow:0 0 7px rgba(63,224,141,.55);opacity:.78}
+  .port-dot.role-H{width:10px;height:10px;background:var(--amber);
+    box-shadow:0 0 9px rgba(245,166,35,.7)}
+  .port-dot.role-L{width:13px;height:13px;background:var(--glow);
+    box-shadow:0 0 14px rgba(45,226,230,.9),0 0 0 0 rgba(45,226,230,.55);animation:pulse 2.8s infinite}
+  /* currently-selected endpoints get a ring + bump */
+  .port-dot.sel-load{outline:2px solid var(--glow);outline-offset:2px;transform:scale(1.4);
+    box-shadow:0 0 18px rgba(45,226,230,1);background:var(--glow);animation:pulse 1.8s infinite;z-index:2}
+  .port-dot.sel-disch{outline:2px solid var(--profit);outline-offset:2px;transform:scale(1.4);
+    box-shadow:0 0 16px rgba(63,224,141,1);background:var(--profit);opacity:1;animation:none;z-index:2}
+  .port-dot.sel-origin{outline:2px solid var(--loss);outline-offset:2px;transform:scale(1.35);
+    box-shadow:0 0 16px rgba(255,92,122,.95);background:var(--loss);opacity:1;animation:none;z-index:2}
+  .port-dot.sel-board{outline:2px solid var(--amber);outline-offset:1px;opacity:.92;z-index:1}
+
+  /* map HUD */
+  .hud{position:absolute;left:12px;right:12px;top:12px;z-index:20;background:var(--bar);
+    backdrop-filter:blur(14px);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px}
+  .hud .hud-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .hud .hud-route{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;min-width:0}
+  .hud .hud-route .arr{color:var(--glow)}
+  .hud .hud-route span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hud .hud-vessel{font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:.05em;flex:0 0 auto;padding-left:8px}
+  .hud-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .hud-grid .hg{text-align:left}
+  .hud-grid .hg .k{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
+  .hud-grid .hg .v{font-family:var(--mono);font-size:15px;font-weight:700;line-height:1}
+  .hud-grid .hg .v small{font-size:9px;font-weight:400;color:var(--ink-faint)}
+  .map-legend{position:absolute;left:12px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);z-index:20;
+    background:var(--bar);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+    font-family:var(--mono);font-size:10px;color:var(--ink-dim);display:flex;flex-direction:column;gap:6px}
+  .map-legend .ll{display:flex;align-items:center;gap:8px}
+  .map-clear{position:absolute;right:12px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);z-index:20;
+    display:flex;align-items:center;gap:6px;background:var(--bar);backdrop-filter:blur(14px);
+    border:1px solid var(--line-2);color:var(--ink-dim);font-family:var(--mono);font-size:12px;font-weight:500;
+    padding:9px 14px;border-radius:11px;letter-spacing:.03em;transition:.15s}
+  .map-clear:hover{color:var(--loss);border-color:var(--loss)}
+  .map-clear:active{transform:scale(.96);background:var(--deck-2)}
+
+  /* voyage stack panel (top-right of map) */
+  .map-panel{position:absolute;right:12px;top:116px;z-index:21;width:216px;max-width:56vw;background:var(--bar);
+    backdrop-filter:blur(14px);border:1px solid var(--line-2);border-radius:12px;padding:8px 9px;
+    box-shadow:0 10px 34px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:7px;max-height:70vh}
+  .mp-vsel{display:flex;flex-direction:column;gap:3px}
+  .mp-vsel span{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint)}
+  .mp-vsel select{width:100%;background:var(--deck);color:var(--ink);border:1px solid var(--line-2);border-radius:8px;
+    padding:6px 8px;font-size:11.5px;font-family:var(--sans)}
+  .mp-stage{display:flex;gap:6px}
+  .mp-btn{flex:1;font-family:var(--mono);font-size:10.5px;padding:6px 4px;border-radius:8px;border:1px solid var(--line-2);
+    background:var(--chip);color:var(--ink-dim);letter-spacing:.02em;transition:.14s}
+  .mp-btn.next:active{color:var(--glow);border-color:var(--glow)}
+  .mp-btn.end:active{color:var(--profit);border-color:var(--profit)}
+  .mp-btn:active{transform:scale(.96)}
+  .map-stack{display:flex;flex-direction:column;gap:1px;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:34vh}
+  .ms-empty{font-size:10.5px;color:var(--ink-faint);line-height:1.5;padding:3px 2px}
+  .ms-empty b{color:var(--ink-dim)}
+  .ms-row{display:flex;align-items:center;gap:6px;padding:5px 3px;border-radius:8px;cursor:pointer}
+  .ms-row:hover{background:var(--chip)}
+  .ms-row.cur{background:var(--chip);box-shadow:0 0 0 1px var(--line-2) inset}
+  .ms-sw{width:7px;height:18px;border-radius:3px;flex:0 0 auto}
+  .ms-vn{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint);flex:0 0 auto;width:17px}
+  .ms-nm{flex:1;min-width:0;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ms-tce{font-family:var(--mono);font-size:11px;font-weight:600;flex:0 0 auto}
+  .ms-tce.pos{color:var(--profit)} .ms-tce.neg{color:var(--loss)}
+  .ms-x{flex:0 0 auto;color:var(--ink-faint);font-size:15px;width:15px;line-height:1}
+  .ms-x:hover{color:var(--loss)}
+  .mp-combined{border-top:1px solid var(--line);padding-top:7px;display:flex;flex-direction:column;gap:3px}
+  .mc-head{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--glow);margin-bottom:2px}
+  .mc-row{display:flex;align-items:baseline;justify-content:space-between;font-size:11px;color:var(--ink-dim)}
+  .mc-row b{font-family:var(--mono);font-size:12px;color:var(--ink)} .mc-row b.pos{color:var(--profit)} .mc-row b.neg{color:var(--loss)}
+  .mc-clear{margin-top:4px;font-family:var(--mono);font-size:10px;color:var(--loss);border:1px solid var(--line-2);border-radius:7px;padding:4px;letter-spacing:.03em}
+  .mc-clear:active{background:rgba(255,92,122,.15)}
+  .mp-fix{font-family:var(--mono);font-size:10px;padding:6px;border-radius:8px;border:1px solid var(--line-2);
+    background:var(--hull);color:var(--ink-dim);letter-spacing:.02em}
+  .mp-fix.on{color:#7FB0FF;border-color:#7FB0FF}
+  .mp-fix:disabled{opacity:.5}
+
+  /* multi-port chips + round-trip toggle in builder */
+  .chip-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:7px}
+  .chip-row .chip-lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin-right:2px}
+  .pchip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:4px 4px 4px 9px;border-radius:9px;
+    border:1px solid var(--line-2);background:var(--deck)}
+  .pchip.load{border-color:rgba(45,226,230,.4)} .pchip.disch{border-color:rgba(63,224,141,.4)}
+  .pchip button{width:16px;height:16px;border-radius:5px;color:var(--ink-faint);font-size:13px;line-height:1}
+  .pchip button:hover{color:var(--loss);background:var(--chip)}
+  .rt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;padding:2px 0}
+  .rt-row span{font-size:12.5px;color:var(--ink-dim)} .rt-row small{display:block;font-size:10.5px;color:var(--ink-faint);margin-top:1px}
+
+  /* extra popup buttons (add a call) */
+  .pop-btns2{display:flex;gap:6px;margin-top:6px}
+  .pop-btns2 button{flex:1;font-family:var(--mono);font-size:10px;padding:5px;border:1px dashed var(--line-2);
+    border-radius:7px;color:var(--ink-dim);background:var(--chip)}
+  .pop-btns2 button:active{color:var(--glow);border-color:var(--glow)}
+  .ship-mk{filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));transition:transform .1s}
+  .leaflet-tooltip.ship-tip{background:var(--bar);border:1px solid var(--line-2);color:var(--ink);font-size:11px;
+    border-radius:7px;padding:5px 9px;box-shadow:0 4px 14px rgba(0,0,0,.35);max-width:230px;text-align:left;line-height:1.4}
+  .leaflet-tooltip.ship-tip b{color:#9CC4FF}
+  .leaflet-tooltip.ship-tip::before{display:none}
+  .leaflet-tooltip.ship-tip .tt-rt{display:block;color:var(--ink-dim);font-size:10.5px;margin-top:2px}
+  .leaflet-tooltip.ship-tip .tt-m{display:block;color:var(--ink-faint);font-family:var(--mono);font-size:9.5px;margin-top:1px}
+  .leaflet-tooltip.ship-tip .tt-n{display:block;color:var(--ink-faint);font-style:italic;font-size:10.5px;margin-top:3px}
+  .fix-hit{cursor:pointer}
+  .leaflet-marker-icon .ship-mk{cursor:pointer}
+  .pop-fix{font-size:12px;color:var(--ink);margin-top:5px}
+  .pop-fix2{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);margin-top:2px}
+  .pop-note{font-size:11px;color:var(--ink-faint);font-style:italic;margin-top:4px}
+
+  /* fixings cards */
+  #singleAnalysis{display:contents}
+  .be-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .be-main{flex:0 0 auto;min-width:118px}
+  .be-k{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+  .be-v{font-size:30px;font-weight:700;color:var(--ink);line-height:1.05;margin-top:3px}
+  .be-sub{font-family:var(--mono);font-size:10.5px;margin-top:4px;color:var(--ink-dim)}
+  .be-sub.pos{color:var(--profit)} .be-sub.neg{color:var(--loss)}
+  .be-bar{flex:1;min-width:150px;position:relative;height:38px;background:var(--deck);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .be-fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px 0 0 8px;transition:width .5s,background .3s;opacity:.55}
+  .be-thr{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.85}
+  .be-thr::after{content:'BE';position:absolute;top:0;left:4px;font-family:var(--mono);font-size:8px;color:var(--ink-dim)}
+  .cb-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .cb-t{background:var(--deck);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+  .cb-t .k{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
+  .cb-t .v{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink);line-height:1.1}
+  .cb-t .v small{font-size:9px;color:var(--ink-faint);margin-left:2px;font-weight:400}
+  .cb-t .v.pos{color:var(--profit)} .cb-t .v.neg{color:var(--loss)}
+  .cb-sw{display:inline-block;width:9px;height:9px;border-radius:2px}
+  .cb-rt{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #cbTable tr.cb-sum td{border-top:1px solid var(--line-2);font-weight:600;color:var(--ink);font-family:var(--mono)}
+  .fix-preview{margin:2px 0 12px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--hull);font-family:var(--mono);font-size:11px;color:var(--ink-dim);line-height:1.5}
+  .fix-preview .fp-r{color:var(--ink)} .fix-preview b.pos{color:var(--profit)} .fix-preview b.neg{color:var(--loss)}
+  .fix-preview .fp-empty{color:var(--ink-faint);font-style:italic}
+  .fix-card{border:1px solid var(--line-2);border-radius:12px;padding:11px 12px;margin-bottom:10px;background:var(--deck)}
+  .fix-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px}
+  .fix-vsl{font-size:14px;font-weight:600;display:flex;align-items:baseline;gap:7px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fix-cls{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);
+    border:1px solid var(--line-2);border-radius:6px;padding:1px 6px;flex:0 0 auto}
+  .fix-cp{font-family:var(--mono);font-size:11px;color:var(--amber);flex:0 0 auto}
+  .fix-route{font-size:12.5px;color:var(--ink);margin-bottom:3px}
+  .fix-meta{font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+  .fix-note{font-size:11.5px;color:var(--ink-faint);margin-top:5px;font-style:italic}
+  .fix-btns{display:flex;gap:7px;margin-top:9px}
+  .fix-btns .fb{flex:1;font-family:var(--mono);font-size:11px;padding:7px;border:1px solid var(--line-2);border-radius:8px;color:var(--ink-dim);background:var(--hull)}
+  .fix-btns .fb.on{color:var(--glow);border-color:var(--glow-dim);background:rgba(45,226,230,.08)}
+  .fix-btns .fb.del:active{color:var(--loss);border-color:var(--loss)}
+  .fix-btns .fb:active{transform:scale(.97)}
+  .seg{width:20px;height:0;border-top:2px solid var(--profit)}
+  .seg.laden{border-top:2px solid var(--profit)}
+  .seg.ballast{border-top:2px dashed var(--loss)}
+  .seg.dash{border-top:2px dashed var(--loss)}
+
+  /* settings */
+  .seg-toggle{display:flex;background:var(--deck);border:1px solid var(--line-2);border-radius:10px;padding:3px;gap:3px;margin-bottom:13px}
+  .seg-toggle button{flex:1;padding:8px;font-size:11.5px;font-family:var(--mono);color:var(--ink-dim);border-radius:7px;transition:.15s}
+  .seg-toggle button.on{background:rgba(45,226,230,.12);color:var(--glow)}
+  .switch{position:relative;width:44px;height:25px;flex:0 0 auto}
+  .switch input{display:none}
+  .switch i{position:absolute;inset:0;background:var(--deck);border:1px solid var(--line-2);border-radius:20px;transition:.2s}
+  .switch i::after{content:"";position:absolute;width:19px;height:19px;border-radius:50%;background:var(--ink-faint);top:2px;left:2px;transition:.2s}
+  .switch input:checked + i{background:rgba(45,226,230,.2);border-color:var(--glow)}
+  .switch input:checked + i::after{transform:translateX(19px);background:var(--glow)}
+  .set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .set-row:last-child{border-bottom:none}
+  .set-row .lbl{font-size:13px}
+  .set-row .lbl small{display:block;font-size:11px;color:var(--ink-faint);margin-top:2px;font-family:var(--mono);line-height:1.4}
+  .db-tbl{width:100%;font-family:var(--mono);font-size:11.5px;border-collapse:collapse}
+  .db-tbl th{font-family:var(--display);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);padding:5px 4px;text-align:left;border-bottom:1px solid var(--line-2)}
+  .db-tbl td{padding:4px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .db-tbl input{width:100%;background:var(--deck);border:1px solid transparent;border-radius:6px;padding:6px 5px;font-size:11.5px;text-align:right}
+  .db-tbl input:focus{border-color:var(--glow);outline:none}
+  .db-tbl input.txt{text-align:left}
+  .db-tbl td.nm{color:var(--ink);font-weight:500;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+  .del{color:var(--loss);font-size:15px;width:24px;text-align:center;opacity:.6}
+  .del:active{opacity:1}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 14px;border-radius:10px;
+    font-size:13px;font-weight:600;font-family:var(--display);transition:.15s;border:1px solid var(--line-2);background:var(--deck);color:var(--ink)}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:rgba(45,226,230,.1);border-color:var(--glow);color:var(--glow)}
+  .btn.full{width:100%}
+  .btn-row{display:flex;gap:10px;margin-top:12px}
+  .note{font-size:11px;color:var(--ink-faint);font-family:var(--mono);line-height:1.5;margin-top:10px;
+    padding:10px;border:1px dashed var(--line-2);border-radius:10px;background:rgba(245,166,35,.03)}
+  .note b{color:var(--amber)}
+  .warn{font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:8px;display:none}
+  .warn.show{display:block}
+  .add-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px;padding:11px;border:1px solid var(--line);border-radius:10px}
+  .add-form input,.add-form select{font-size:12px;padding:9px;background:var(--deck);border:1px solid var(--line-2);border-radius:8px}
+  .add-form .full{grid-column:1/3}
+  canvas{display:block;width:100%}
+  .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 24px);transform:translateX(-50%) translateY(20px);
+    background:var(--deck);border:1px solid var(--glow-dim);color:var(--ink);font-size:12.5px;font-family:var(--mono);
+    padding:11px 16px;border-radius:24px;z-index:200;opacity:0;transition:.25s;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:88%}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .sub-label{font-size:11px;color:var(--ink-faint);font-family:var(--mono);margin:-4px 0 10px}
+
+  /* ---- chart box: bounds Chart.js height so it can't grow unbounded ---- */
+  .chart-box{position:relative;width:100%;height:230px;margin-top:4px}
+  .chart-box canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+
+  /* port-role badge in popup */
+  .pop-role{display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:2px 7px;border-radius:10px;margin-bottom:8px}
+  .pop-role.L{color:var(--glow);background:rgba(45,226,230,.12);border:1px solid var(--glow-dim)}
+  .pop-role.D{color:var(--profit);background:rgba(63,224,141,.12);border:1px solid rgba(63,224,141,.4)}
+  .pop-role.H{color:var(--amber);background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.4)}
+
+  /* via / routing selector */
+  .via-tag{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.04em}
+  .seg.cape{border-top:2px dashed var(--glow)}
+
+  /* user tag in topbar */
+  .rail-mark{display:none}
+  .user-tag{font-family:var(--mono);font-size:11px;color:var(--ink-dim);display:none;align-items:center;gap:6px;
+    border:1px solid var(--line-2);padding:4px 10px;border-radius:20px;background:var(--chip);max-width:160px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .user-tag.show{display:inline-flex}
+  .user-tag b{color:var(--glow);font-weight:600}
+
+  /* =================== HOME / LANDING =================== */
+  #home{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 80% at 50% -10%,var(--home-grad) 0%,var(--abyss) 60%);
+    transition:opacity .5s ease,visibility .5s}
+  #home.hidden{opacity:0;visibility:hidden;pointer-events:none}
+  #home::before{content:"";position:absolute;inset:0;opacity:.4;pointer-events:none;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:40px 40px;mask:radial-gradient(80% 60% at 50% 40%,#000,transparent 75%)}
+  .home-card{position:relative;width:100%;max-width:440px;text-align:center}
+  .home-beacon{width:58px;height:58px;border-radius:50%;margin:0 auto 22px;position:relative;
+    background:radial-gradient(circle at 50% 40%,var(--glow),var(--glow-dim) 60%,transparent 72%)}
+  .home-beacon::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:1px solid var(--glow-dim);
+    animation:pulse 2.6s infinite}
+  .home-card h1{font-size:30px;letter-spacing:.04em;font-weight:700;margin:0 0 6px}
+  .home-card h1 b{color:var(--glow)}
+  .home-card .tag{font-family:var(--mono);font-size:12px;color:var(--ink-dim);letter-spacing:.04em;margin:0 0 4px}
+  .home-card .sub{font-size:13px;color:var(--ink-faint);line-height:1.55;margin:0 auto 28px;max-width:340px}
+  .home-form{display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto}
+  .home-form label{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);text-align:left;font-weight:600}
+  .home-form input{background:var(--deck);border:1px solid var(--line-2);border-radius:11px;padding:14px 14px;
+    font-size:16px;font-family:var(--mono);color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;text-align:center}
+  .home-form input:focus{border-color:var(--glow);box-shadow:0 0 0 3px rgba(45,226,230,.13)}
+  .home-launch{margin-top:4px;background:linear-gradient(180deg,rgba(45,226,230,.18),rgba(45,226,230,.06));
+    border:1px solid var(--glow);color:var(--glow);font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.06em;
+    padding:14px;border-radius:11px;text-transform:uppercase;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .home-launch:hover{background:rgba(45,226,230,.22);box-shadow:0 0 24px rgba(45,226,230,.25)}
+  .home-launch:active{transform:scale(.98)}
+  .home-foot{font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:.08em;margin-top:30px}
+
+  /* =================== MAP LAYOUT FIX =================== */
+  /* pin the map screen to the viewport so its height can never collapse
+     (mobile Safari can zero-out a flex/absolute chain — fixed avoids that) */
+  #screen-map{position:fixed;top:calc(var(--top-h) + env(safe-area-inset-top));left:0;right:0;bottom:0;
+    width:auto;height:auto;padding:0;margin:0;max-width:none;z-index:6}
+  #screen-map.active{display:block;animation:none}
+  #map{position:absolute;inset:0;width:100%;height:100%}
+
+  /* =================== VOYAGE BOARD =================== */
+  .board-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line-2);border-radius:11px;
+    background:var(--deck);margin-bottom:8px;position:relative;cursor:pointer;transition:.15s;overflow:hidden}
+  .board-item:hover{border-color:var(--line-2)}
+  .board-item.active{border-color:var(--glow);box-shadow:0 0 0 1px var(--glow-dim) inset}
+  .board-item .swatch{width:9px;height:34px;border-radius:4px;flex:0 0 auto}
+  .board-item .bi-body{flex:1;min-width:0}
+  .board-item .bi-nm{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .board-item .bi-sub{font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .board-item .bi-tce{font-family:var(--mono);font-size:14px;font-weight:700;flex:0 0 auto;text-align:right}
+  .board-item .bi-del{flex:0 0 auto;color:var(--loss);font-size:16px;width:24px;text-align:center;opacity:.55}
+  .board-item .bi-del:hover{opacity:1}
+  .board-empty{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);line-height:1.5;padding:4px 2px}
+  .pill{display:inline-flex;align-items:center;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+    padding:2px 7px;border-radius:10px;border:1px solid var(--line-2);color:var(--ink-faint);margin-left:6px}
+  /* group separators inside selects render via optgroup label styling (browser default) */
+  optgroup{color:var(--ink-faint);font-style:normal}
+  option{color:var(--ink)}
+
+
+  @media (min-width:100000px){ /* desktop layout disabled — mobile build */
+    body{font-size:15px}
+    #app{max-width:none;padding-left:90px;background:radial-gradient(120% 70% at 50% -5%,var(--grad-1) 0%,var(--abyss) 50%)}
+    /* nav becomes a fixed left rail */
+    .nav{flex-direction:column;top:0;bottom:0;right:auto;left:0;width:90px;height:100vh;
+      border-top:none;border-right:1px solid var(--line);justify-content:flex-start;gap:4px;padding:84px 0 0;
+      background:var(--bar)}
+    .nav button{flex:0 0 auto;height:66px;font-size:10px}
+    .nav button svg{width:23px;height:23px}
+    .nav button.on::before{top:50%;left:0;width:3px;height:30px;transform:translateY(-50%);border-radius:3px}
+    /* brand mark floating over the rail top */
+    .rail-mark{position:fixed;left:0;top:0;width:90px;height:72px;display:flex;align-items:center;justify-content:center;
+      z-index:41;border-right:1px solid var(--line)}
+    .topbar{gap:12px}
+    .topbar .brand{margin-right:auto}
+    .user-tag{max-width:240px}
+    .content{}
+    /* center + widen the scrolling area */
+    .screen{max-width:1240px;margin-inline:auto;padding:22px 26px 40px}
+    #screen-map.active{padding:0}
+    #screen-map{left:90px;top:var(--top-h)}
+    /* two-column working layouts so you don't scroll forever */
+    #screen-voyages.active{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;grid-auto-flow:row dense}
+    #screen-analysis.active{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+    #screen-analysis .an-subject{grid-column:1/-1;grid-row:1}
+    #screen-analysis #combinedPanel{grid-column:1/-1;grid-row:2}
+    #screen-analysis .an-scn{grid-column:1;grid-row:2/span 3;align-self:stretch}
+    #screen-analysis .an-be{grid-column:2;grid-row:2}
+    #screen-analysis .an-cmp{grid-column:2;grid-row:3}
+    #screen-analysis .an-neg{grid-column:2;grid-row:4}
+    #screen-analysis .an-bal{grid-column:1/-1;grid-row:5}
+    /* let the tall sensitivity panel + AI panels span where useful */
+    #screen-voyages .ai-panel{grid-column:1/-1}
+    #screen-analysis .ai-panel{grid-column:1/-1;grid-row:6}
+    .panel,.ai-panel{margin-bottom:0}
+    .chart-box{height:280px}
+    .hud{left:auto;right:18px;top:18px;width:380px}
+    .map-legend{left:18px;bottom:18px}
+    .map-clear{right:18px;bottom:18px}
+    .map-panel{right:18px;top:152px;width:240px;max-width:240px}
+    .home-card{max-width:480px}
+    .home-card h1{font-size:36px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= HOME / LANDING ================= -->
+<div id="home">
+  <div class="home-card">
+    <div class="home-beacon"></div>
+    <h1>Anchor <b>Voyage</b></h1>
+    <p class="tag">TANKER VOYAGE ECONOMICS · ROUTE INTELLIGENCE</p>
+    <p class="sub">Deterministic TCE, Worldscale sensitivity and route intelligence for the tanker desk. Every figure is formula-driven.</p>
+    <div class="home-form">
+      <label for="homeUser">Your name / desk</label>
+      <input id="homeUser" type="text" placeholder="e.g. Miguel" autocomplete="off" maxlength="40">
+      <button class="home-launch" id="homeLaunch">Launch ▸</button>
+    </div>
+    <div class="home-foot">ANCHOR VOYAGE · ANCHOR MARITIME</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="rail-mark"><span class="beacon"></span></div>
+  <div class="topbar">
+    <div class="brand"><span class="beacon"></span><h1>Anchor <b>Voyage</b></h1></div>
+    <span class="user-tag" id="userTag"></span>
+    <div class="top-right">
+      <button class="icon-btn" id="btnTheme" title="Toggle light / dark" aria-label="Toggle light or dark mode">☀</button>
+      <div class="ctx-chip mono" id="ctxChip">—</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- ================= MAP ================= -->
+    <section class="screen active" id="screen-map">
+      <div id="map"></div>
+      <div class="hud" id="mapHud">
+        <div class="hud-top">
+          <div class="hud-route"><span id="hudLoad">—</span><span class="arr">→</span><span id="hudDisch">—</span><span class="via-tag" id="hudVia"></span></div>
+          <div class="hud-vessel" id="hudVessel">—</div>
+        </div>
+        <div class="hud-grid">
+          <div class="hg"><div class="k">Distance</div><div class="v mono" id="hudDist">—</div></div>
+          <div class="hg"><div class="k">Voy days</div><div class="v mono" id="hudDays">—</div></div>
+          <div class="hg"><div class="k">TCE</div><div class="v mono" id="hudTce">—</div></div>
+          <div class="hg"><div class="k">Profit</div><div class="v mono" id="hudProfit">—</div></div>
+        </div>
+      </div>
+      <div class="map-legend">
+        <div class="ll"><span class="seg laden"></span> Laden</div>
+        <div class="ll"><span class="seg ballast"></span> Ballast</div>
+        <div class="ll"><span class="dot" style="background:var(--glow);box-shadow:0 0 8px var(--glow)"></span> Load hub</div>
+        <div class="ll"><span class="dot" style="background:var(--profit);box-shadow:0 0 6px var(--profit)"></span> Discharge</div>
+        <div class="ll"><span class="dot" style="background:var(--amber);box-shadow:0 0 6px var(--amber)"></span> Hub</div>
+      </div>
+      <button class="map-clear" id="btnMapClear" title="Clear the current voyage">✕ Clear</button>
+      <div class="map-panel" id="mapPanel">
+        <label class="mp-vsel"><span>Vessel class</span><select id="mapVessel"></select></label>
+        <div class="mp-stage">
+          <button class="mp-btn next" id="btnVoyNext" title="Fix this leg and start the next, ballasting from its discharge">＋ Voy</button>
+          <button class="mp-btn end" id="btnVoyEnd" title="Fix this leg into the stack">✓ End voy</button>
+        </div>
+        <div class="map-stack" id="mapStack"></div>
+        <div class="mp-combined" id="mpCombined" style="display:none"></div>
+        <button class="mp-fix" id="btnFixShow" title="Show / hide saved fixings on the map">Fixings</button>
+      </div>
+    </section>
+
+    <!-- ================= VOYAGES ================= -->
+    <section class="screen" id="screen-voyages">
+      <div class="panel">
+        <div class="eyebrow"><span class="tick"></span>Voyage builder</div>
+        <label class="fld"><span>Quick-fill from preset · optional</span>
+          <select class="input" id="selPreset"></select></label>
+        <div class="row2">
+          <label class="fld"><span>Load port</span><select class="input" id="selLoad"></select></label>
+          <label class="fld"><span>Discharge port</span><select class="input" id="selDisch"></select></label>
+        </div>
+        <div id="extraPorts" style="display:none;margin-bottom:11px"></div>
+        <div class="row2">
+          <label class="fld"><span>Extra load call</span><select class="input" id="selAddLoad"></select></label>
+          <label class="fld"><span>Extra discharge call</span><select class="input" id="selAddDisch"></select></label>
+        </div>
+        <label class="fld"><span>Origin · optional (sets ballast leg to load port)</span>
+          <select class="input" id="selOrigin"></select></label>
+        <div class="rt-row"><span>Round trip <small>ballast back to load after discharge</small></span>
+          <label class="switch"><input type="checkbox" id="rtToggle"><i></i></label></div>
+        <label class="fld"><span>Vessel · loads ops profile</span>
+          <select class="input" id="selVessel"></select></label>
+        <div class="row2">
+          <div class="kv" style="border-radius:10px;border:1px solid var(--line)"><div class="k">DWT</div><div class="v sm mono" id="vDwt">—</div></div>
+          <div class="kv" style="border-radius:10px;border:1px solid var(--line)"><div class="k">Laden / Ballast spd</div><div class="v sm mono" id="vSpd">—</div></div>
+        </div>
+        <div class="row2" style="margin-top:11px">
+          <label class="fld"><span>Laden distance · NM <i id="distHint" class="via-tag"></i></span>
+            <div style="display:flex;gap:6px">
+              <input class="input mono" id="inDist" type="number" inputmode="numeric" style="flex:1">
+              <button class="btn" id="btnRecalcDist" title="Re-derive from sea route" style="padding:0 13px;flex:0 0 auto;font-size:15px">↻</button>
+            </div></label>
+          <label class="fld"><span>Cargo · t</span>
+            <input class="input mono" id="inCargo" type="number" inputmode="numeric"></label>
+        </div>
+        <div id="ballastDistWrap" style="display:none">
+          <label class="fld"><span>Ballast distance · NM (auto · editable)</span>
+            <input class="input mono" id="inBallastDist" type="number" inputmode="numeric"></label>
+        </div>
+        <div id="viaWrap" style="display:none;margin-bottom:11px">
+          <span style="display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:6px;font-weight:500">Routing</span>
+          <div class="seg-toggle" id="viaToggle" style="margin-bottom:4px"></div>
+          <div class="sub-label" id="viaNote" style="margin:0">—</div>
+        </div>
+        <label class="fld"><span>Canal / transit cost · $ (optional)</span>
+          <input class="input mono" id="inCanal" type="number" inputmode="numeric"></label>
+        <div class="warn" id="cargoWarn"></div>
+        <div class="btn-row">
+          <button class="btn" id="btnClear">✕ Clear</button>
+          <button class="btn" id="btnChain" title="Stack this voyage and start the next leg from its discharge port">⛓ Chain next</button>
+          <button class="btn primary" id="btnAddBoard">＋ Add to board</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Market inputs</div>
+        <label class="fld"><span>Worldscale rate · manual</span>
+          <div class="stepper">
+            <button data-ws="-5">−5</button><span class="div"></span><button data-ws="-1">−</button>
+            <input class="mono" id="inWs" type="number" inputmode="decimal" step="2.5">
+            <button data-ws="1">+</button><span class="div"></span><button data-ws="5">+5</button>
+          </div>
+        </label>
+        <label class="fld"><span>Flat rate · WS100 ($/t) — user maintained</span>
+          <input class="input mono" id="inFlat" type="number" inputmode="decimal" step="0.05"></label>
+        <div class="row2">
+          <label class="fld"><span>Address comm · %</span><input class="input mono" id="inAddComm" type="number" inputmode="decimal" step="0.25"></label>
+          <label class="fld"><span>Broker comm · %</span><input class="input mono" id="inBrkComm" type="number" inputmode="decimal" step="0.25"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>Bunker hub</span><select class="input" id="selBunker"></select></label>
+          <label class="fld"><span>VLSFO $/mt · editable</span><input class="input mono" id="inBunker" type="number" inputmode="decimal"></label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Voyage result</div>
+        <div class="hero-tce">
+          <div><div class="big mono" id="rTce">—</div></div>
+          <div class="unit">USD / day · TCE</div>
+        </div>
+        <div class="profit-line">Voyage profit <b class="mono" id="rProfit">—</b> over <b class="mono" id="rDays">—</b> days</div>
+        <div class="frt-grid">
+          <div class="frt-row"><span>Gross freight</span><b class="mono" id="rGross">—</b></div>
+          <div class="frt-row"><span>Address comm <i class="via-tag" id="rAddPct">2.5%</i></span><b class="mono neg" id="rAddComm">—</b></div>
+          <div class="frt-row"><span>Broker comm <i class="via-tag" id="rBrkPct">1.25%</i></span><b class="mono neg" id="rBrkComm">—</b></div>
+          <div class="frt-row net"><span>Net freight</span><b class="mono" id="rNet">—</b></div>
+        </div>
+        <div class="costbar" id="costBar"></div>
+        <div class="legend" id="costLegend"></div>
+        <div class="kv-grid">
+          <div class="kv"><div class="k">Total voyage cost</div><div class="v mono" id="rCost">—</div></div>
+          <div class="kv"><div class="k">Voyage profit</div><div class="v mono sm" id="rProfit2">—</div></div>
+          <div class="kv"><div class="k">Bunkers</div><div class="v mono sm" id="rFuel">—</div></div>
+          <div class="kv"><div class="k">Port costs</div><div class="v mono sm" id="rPort">—</div></div>
+          <div class="kv"><div class="k">Canal</div><div class="v mono sm" id="rCanal">—</div></div>
+          <div class="kv"><div class="k">Total fuel · mt</div><div class="v mono sm" id="rFuelMt">—</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow"><span class="tick"></span>Voyage board <span id="boardCount" class="via-tag"></span></div>
+        <div id="boardList"></div>
+        <div class="btn-row" id="boardActions" style="display:none">
+          <button class="btn" id="btnClearBoard">✕ Clear board</button>
+        </div>
+      </div>
+
+      <div class="ai-panel" id="aiVoyage"></div>
+    </section>
+
+    <!-- ================= ANALYSIS ================= -->
+    <section class="screen" id="screen-analysis">
+      <div class="panel an-subject">
+        <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Analysis subject</div>
+        <label class="fld" style="margin:0"><span>Analyse which voyage</span>
+          <select class="input" id="selAnalyze"></select></label>
+        <div class="sub-label" id="analyzeMeta" style="margin-top:8px">—</div>
+      </div>
+
+      <div class="panel" id="combinedPanel" style="display:none">
+        <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Combined program · <span id="cbVessel" class="mono"></span></div>
+        <div class="cb-totals" id="cbTotals"></div>
+        <div class="chart-box" style="margin-top:10px"><canvas id="cbChart"></canvas></div>
+        <div style="overflow-x:auto;margin-top:8px"><table class="tbl" id="cbTable"></table></div>
+        <div class="sub-label" style="margin-top:8px">Blended TCE = total profit ÷ total days across every staged voyage, priced on the vessel selected on the Map tab. Stage voyages with ＋ Voy / ✓ End voy.</div>
+      </div>
+
+      <div id="singleAnalysis">
+      <div class="panel an-be">
+        <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Breakeven &amp; margins</div>
+        <div class="be-head">
+          <div class="be-main">
+            <div class="be-k">Breakeven Worldscale</div>
+            <div class="be-v mono" id="beWs">—</div>
+            <div class="be-sub" id="beCushion">—</div>
+          </div>
+          <div class="be-bar"><div class="be-fill" id="beFill"></div><div class="be-thr" id="beThr"></div></div>
+        </div>
+        <div class="kv-grid" style="margin-top:12px">
+          <div class="kv"><div class="k">Margin on gross</div><div class="v mono" id="mMargin">—</div></div>
+          <div class="kv"><div class="k">Profit / tonne</div><div class="v mono" id="mProfitT">—</div></div>
+          <div class="kv"><div class="k">Net freight / t</div><div class="v mono" id="mNetT">—</div></div>
+          <div class="kv"><div class="k">Cost / tonne</div><div class="v mono" id="mCostT">—</div></div>
+          <div class="kv"><div class="k">Daily cost</div><div class="v mono" id="mDayCost">—</div></div>
+          <div class="kv"><div class="k">Revenue / day</div><div class="v mono" id="mRevDay">—</div></div>
+        </div>
+        <div class="sub-label" style="margin-top:8px">Breakeven WS is the rate that exactly covers all costs (profit = 0). Cushion is how far today's WS sits above it — the buffer before the voyage goes underwater.</div>
+      </div>
+      <div class="panel an-scn">
+        <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Worldscale sensitivity</div>
+        <div class="row2" style="margin-bottom:4px">
+          <label class="fld"><span>Increment</span>
+            <select class="input" id="selInc"><option value="2.5">2.5 pts</option><option value="5" selected>5 pts</option><option value="10">10 pts</option></select></label>
+          <label class="fld"><span>Scenarios</span>
+            <select class="input" id="selCount"><option>5</option><option>7</option><option>9</option><option>11</option></select></label>
+        </div>
+        <div class="chart-box"><canvas id="wsChart"></canvas></div>
+        <div style="overflow-x:auto;margin-top:6px">
+          <table class="tbl" id="wsTable"></table>
+        </div>
+        <div class="sub-label" style="margin-top:8px">Sensitivity is exact: revenue moves linearly with WS, costs are fixed — so every point is worth the same.</div>
+      </div>
+
+      <div class="panel an-neg"><div class="neg-card" id="negCard"></div></div>
+
+      <div class="panel an-cmp">
+        <div class="eyebrow"><span class="tick"></span>Compare · voyages sharing this load port</div>
+        <div class="seg-toggle" id="rankToggle">
+          <button class="on" data-rank="tce">TCE</button>
+          <button data-rank="profit">Profit</button>
+          <button data-rank="breakeven">Breakeven</button>
+          <button data-rank="ballast">Ballast</button>
+        </div>
+        <div id="cmpList"></div>
+      </div>
+
+      <div class="panel an-bal">
+        <div class="eyebrow"><span class="tick"></span>Ballast vs laden</div>
+        <div class="gauge-wrap">
+          <div class="gauge">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(120,180,255,.12)" stroke-width="8"/>
+              <circle id="gaugeArc" cx="48" cy="48" r="40" fill="none" stroke="var(--glow)" stroke-width="8" stroke-linecap="round"
+                stroke-dasharray="251.3" stroke-dashoffset="251.3" style="transition:stroke-dashoffset .5s, stroke .3s"/>
+            </svg>
+            <div class="num"><b class="mono" id="effScore">—</b><small>Efficiency</small></div>
+          </div>
+          <div style="flex:1">
+            <div class="kv-grid" style="margin-top:0">
+              <div class="kv"><div class="k">Laden dist</div><div class="v sm mono" id="bLadenD">—</div></div>
+              <div class="kv"><div class="k">Ballast dist</div><div class="v sm mono" id="bBallastD">—</div></div>
+              <div class="kv"><div class="k">Laden time</div><div class="v sm mono" id="bLadenT">—</div></div>
+              <div class="kv"><div class="k">Ballast time</div><div class="v sm mono" id="bBallastT">—</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="kv-grid">
+          <div class="kv"><div class="k">Ballast ratio</div><div class="v mono" id="bRatio">—</div></div>
+          <div class="kv"><div class="k">Ballast bunker cost</div><div class="v mono" id="bCost">—</div></div>
+        </div>
+      </div>
+
+      <div class="ai-panel" id="aiAnalysis"></div>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <!-- ================= FIXINGS ================= -->
+    <section class="screen" id="screen-fixings">
+      <div class="panel">
+        <div class="eyebrow"><span class="tick"></span>Add fixture</div>
+        <div class="sub-label" style="margin-bottom:10px">Type a fixing directly, or pull the current voyage from the calculator.</div>
+        <div class="btn-row" style="margin-bottom:11px"><button class="btn" id="btnFixTake" style="flex:1">⤓ Take from calculator</button></div>
+        <label class="fld"><span>Vessel name</span><input class="input" id="fixVessel" type="text" placeholder="e.g. Front Tiger" maxlength="40" autocomplete="off"></label>
+        <div class="row2">
+          <label class="fld"><span>Vessel class</span><select class="input" id="fixClass"></select></label>
+          <label class="fld"><span>CP date</span><input class="input mono" id="fixCp" type="date"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>Load port</span><select class="input" id="fixLoad"></select></label>
+          <label class="fld"><span>Discharge port</span><select class="input" id="fixDisch"></select></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>Cargo · t</span><input class="input mono" id="fixCargo" type="number" inputmode="numeric"></label>
+          <label class="fld"><span>WS rate</span><input class="input mono" id="fixWs" type="number" inputmode="decimal" step="2.5"></label>
+        </div>
+        <div class="fix-preview" id="fixPreview"></div>
+        <label class="fld"><span>Note · optional</span><input class="input" id="fixNote" type="text" placeholder="charterer, cargo, remarks…" maxlength="80" autocomplete="off"></label>
+        <div class="btn-row"><button class="btn primary" id="btnSaveFix" style="flex:1">⚓ Save fixing</button></div>
+      </div>
+      <div class="panel">
+        <div class="ai-head" style="margin-bottom:11px"><div class="l"><span class="ai-orb"></span>Saved fixings <span class="pill" id="fixCount"></span></div></div>
+        <div id="fixList"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-settings">
+      <div class="panel">
+        <div class="eyebrow"><span class="tick"></span>Default assumptions</div>
+        <div class="set-row"><div class="lbl">Default WS rate</div>
+          <input class="input mono" id="defWs" type="number" style="width:90px" step="2.5"></div>
+        <div class="set-row"><div class="lbl">Default increment</div>
+          <select class="input" id="defInc" style="width:110px"><option value="2.5">2.5 pts</option><option value="5">5 pts</option><option value="10">10 pts</option></select></div>
+        <div class="set-row"><div class="lbl">Default scenarios</div>
+          <select class="input" id="defCount" style="width:90px"><option>5</option><option>7</option><option>9</option><option>11</option></select></div>
+        <div class="sub-label" style="margin-top:10px">Applied when the app loads. Change live inputs on the Voyages / Analysis tabs.</div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow"><span class="tick"></span>Appearance</div>
+        <div class="seg-toggle" id="themeToggle">
+          <button data-theme="dark">◑ Dark</button>
+          <button data-theme="light">◐ Light</button>
+        </div>
+        <div class="sub-label">Switch any time from the ☀ / ☾ button in the top bar. Your choice is remembered on this device.</div>
+      </div>
+
+      <div class="panel">
+        <div class="ai-head" style="margin-bottom:13px">
+          <div class="l"><span class="ai-orb"></span>AI commentary engine</div>
+        </div>
+        <div class="set-row"><div class="lbl">Use local Ollama<small>Off → deterministic commentary only</small></div>
+          <label class="switch"><input type="checkbox" id="aiEnable"><i></i></label></div>
+        <label class="fld" style="margin-top:13px"><span>Ollama endpoint</span>
+          <input class="input mono" id="aiEndpoint" type="text" placeholder="http://localhost:11434/api/generate"></label>
+        <label class="fld"><span>Model</span>
+          <input class="input mono" id="aiModel" type="text" placeholder="llama3.1"></label>
+        <div class="note"><b>Local-first.</b> Ollama runs on your machine; this app calls it directly from the browser. Run <span style="color:var(--ink)">OLLAMA_ORIGINS="*" ollama serve</span> so the browser request is accepted (CORS). The engine never asks AI for numbers — only for interpretation of figures it already computed. With AI off, the deterministic generator still writes full commentary.</div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow"><span class="tick"></span>Database</div>
+        <div class="seg-toggle" id="dbToggle">
+          <button class="on" data-db="vessels">Vessels</button>
+          <button data-db="ports">Ports</button>
+          <button data-db="routes">Routes</button>
+          <button data-db="bunkers">Bunkers</button>
+        </div>
+        <div style="overflow-x:auto"><div id="dbArea"></div></div>
+        <div id="addArea"></div>
+        <div class="btn-row">
+          <button class="btn full" id="btnExport">↓ Export JSON</button>
+          <button class="btn full" id="btnImport">↑ Import JSON</button>
+          <input type="file" id="fileImport" accept="application/json" style="display:none">
+        </div>
+        <div class="note">Flat rates and bunker prices ship as <b>placeholders</b> — overwrite with your current Worldscale flats and live bunker feed. State is per-session; export to keep a versioned DB file (or share the desk's).</div>
+      </div>
+
+      <div class="panel" style="text-align:center">
+        <div class="eyebrow" style="justify-content:center"><span class="tick"></span>About<span class="tick"></span></div>
+        <p style="font-size:12.5px;color:var(--ink-dim);line-height:1.6;margin:0">Deterministic voyage economics · AI for commentary only · fully functional offline of the AI module.<br><span class="mono" style="font-size:10.5px;color:var(--ink-faint);letter-spacing:.08em">Anchor Voyage · built for the tanker desk · Anchor Maritime</span></p>
+      </div>
+    </section>
+  </div>
+
+  <nav class="nav" id="nav">
+    <button class="on" data-tab="map"><svg viewBox="0 0 24 24"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16M15 5v16"/></svg>Map</button>
+    <button data-tab="voyages"><svg viewBox="0 0 24 24"><path d="M3 18s2-1 4-1 4 1 6 0 4-1 6-1M5 9l7-3 7 3M12 6v9M6 11v5M18 11v5"/></svg>Voyages</button>
+    <button data-tab="analysis"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 14l3-4 3 3 5-7"/></svg>Analysis</button>
+    <button data-tab="fixings"><svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-6-3-6 3V2Z"/><path d="M9 7h6M9 11h6"/></svg>Fixings</button>
+    <button data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L3.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h5l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1Z"/></svg>Settings</button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+'use strict';
+/* ============================================================
+   ANCHOR VOYAGE — deterministic engine + commentary
+   All economics are formula-driven. AI is interpretation only.
+   ============================================================ */
+
+/* ---------- seed databases ----------
+   role: L = load/export hub (brightest), D = discharge/import, H = hub/both
+   coords are approximate terminal positions; distances authoritative from route DB */
+const SEED = {
+  vessels: [
+    {id:'v_vlcc', type:'VLCC',    dwt:300000, ladenSpeed:13.0, ballastSpeed:13.5, ladenCons:70, ballastCons:62},
+    {id:'v_suez', type:'Suezmax', dwt:150000, ladenSpeed:13.5, ballastSpeed:14.0, ladenCons:52, ballastCons:47},
+    {id:'v_afra', type:'Aframax', dwt:110000, ladenSpeed:13.5, ballastSpeed:14.0, ladenCons:45, ballastCons:40},
+    {id:'v_lr2',  type:'LR2',     dwt:110000, ladenSpeed:13.5, ballastSpeed:14.0, ladenCons:44, ballastCons:39},
+  ],
+  ports: [
+    // NW Europe
+    {id:'rtm',name:'Rotterdam',country:'NL',region:'NW Europe',role:'H',lat:51.95,lon:4.07,cost:80000,days:1.5},
+    {id:'ant',name:'Antwerp',country:'BE',region:'NW Europe',role:'H',lat:51.30,lon:4.30,cost:80000,days:1.5},
+    {id:'wil',name:'Wilhelmshaven',country:'DE',region:'NW Europe',role:'D',lat:53.52,lon:8.12,cost:80000,days:1.5},
+    {id:'mon',name:'Mongstad',country:'NO',region:'NW Europe',role:'L',lat:60.81,lon:5.03,cost:80000,days:1.5},
+    // Baltic / Russia
+    {id:'pri',name:'Primorsk',country:'RU',region:'Baltic / Russia',role:'L',lat:60.34,lon:28.61,cost:70000,days:1.5},
+    {id:'ust',name:'Ust Luga',country:'RU',region:'Baltic / Russia',role:'L',lat:59.67,lon:28.41,cost:70000,days:1.5},
+    // Mediterranean
+    {id:'agt',name:'Agioi Theodoroi',country:'GR',region:'Mediterranean',role:'H',lat:37.93,lon:23.13,cost:60000,days:1.2},
+    {id:'alx',name:'Alexandria',country:'EG',region:'Mediterranean',role:'D',lat:31.18,lon:29.87,cost:60000,days:1.5},
+    {id:'aug',name:'Augusta',country:'IT',region:'Mediterranean',role:'H',lat:37.20,lon:15.22,cost:60000,days:1.2},
+    {id:'skr',name:'Sidi Kerir',country:'EG',region:'Mediterranean',role:'L',lat:31.10,lon:29.66,cost:60000,days:1.2},
+    {id:'cey',name:'Ceyhan',country:'TR',region:'Mediterranean',role:'L',lat:36.87,lon:35.93,cost:65000,days:1.5},
+    {id:'trs',name:'Trieste',country:'IT',region:'Mediterranean',role:'D',lat:45.65,lon:13.75,cost:60000,days:1.2},
+    // Black Sea
+    {id:'nvr',name:'Novorossiysk',country:'RU',region:'Black Sea',role:'L',lat:44.72,lon:37.78,cost:65000,days:1.5},
+    {id:'cst',name:'Constantza',country:'RO',region:'Black Sea',role:'H',lat:44.17,lon:28.66,cost:65000,days:1.5},
+    // West Africa
+    {id:'bon',name:'Bonny',country:'NG',region:'West Africa',role:'L',lat:4.42,lon:7.16,cost:110000,days:2.5},
+    {id:'fcd',name:'Forcados',country:'NG',region:'West Africa',role:'L',lat:5.35,lon:5.35,cost:110000,days:2.5},
+    {id:'qua',name:'Qua Iboe',country:'NG',region:'West Africa',role:'L',lat:4.55,lon:8.00,cost:110000,days:2.5},
+    {id:'cab',name:'Cabinda',country:'AO',region:'West Africa',role:'L',lat:-5.55,lon:12.17,cost:110000,days:2.5},
+    // Middle East Gulf
+    {id:'rta',name:'Ras Tanura',country:'SA',region:'Middle East Gulf',role:'L',lat:26.64,lon:50.16,cost:60000,days:1.5},
+    {id:'bos',name:'Basrah Oil Terminal',country:'IQ',region:'Middle East Gulf',role:'L',lat:29.69,lon:48.80,cost:60000,days:2.0},
+    {id:'khg',name:'Kharg Island',country:'IR',region:'Middle East Gulf',role:'L',lat:29.23,lon:50.32,cost:60000,days:1.8},
+    {id:'maa',name:'Mina Al Ahmadi',country:'KW',region:'Middle East Gulf',role:'L',lat:29.07,lon:48.16,cost:60000,days:1.5},
+    {id:'rla',name:'Ras Laffan',country:'QA',region:'Middle East Gulf',role:'L',lat:25.92,lon:51.60,cost:60000,days:1.5},
+    {id:'jdr',name:'Jebel Dhanna / Ruwais',country:'AE',region:'Middle East Gulf',role:'L',lat:24.18,lon:52.61,cost:60000,days:1.5},
+    {id:'fjr',name:'Fujairah',country:'AE',region:'Middle East Gulf',role:'H',lat:25.17,lon:56.37,cost:50000,days:1.0},
+    {id:'mfh',name:'Mina Al Fahal',country:'OM',region:'Middle East Gulf',role:'L',lat:23.63,lon:58.52,cost:55000,days:1.5},
+    // Red Sea
+    {id:'ynb',name:'Yanbu',country:'SA',region:'Red Sea',role:'L',lat:24.09,lon:38.06,cost:55000,days:1.5},
+    // India
+    {id:'skk',name:'Sikka',country:'IN',region:'India',role:'H',lat:22.43,lon:69.84,cost:90000,days:2.0},
+    {id:'vdn',name:'Vadinar',country:'IN',region:'India',role:'D',lat:22.28,lon:69.73,cost:90000,days:2.0},
+    {id:'prd',name:'Paradip',country:'IN',region:'India',role:'D',lat:20.26,lon:86.68,cost:90000,days:2.0},
+    {id:'mum',name:'Mumbai',country:'IN',region:'India',role:'D',lat:18.95,lon:72.83,cost:90000,days:2.0},
+    // SE Asia
+    {id:'sin',name:'Singapore',country:'SG',region:'SE Asia',role:'H',lat:1.26,lon:103.80,cost:70000,days:1.0},
+    {id:'mtp',name:'Map Ta Phut',country:'TH',region:'SE Asia',role:'D',lat:12.68,lon:101.15,cost:70000,days:1.2},
+    // China
+    {id:'nbz',name:'Ningbo-Zhoushan',country:'CN',region:'China',role:'D',lat:29.95,lon:122.07,cost:95000,days:2.0},
+    {id:'qin',name:'Qingdao',country:'CN',region:'China',role:'D',lat:36.07,lon:120.32,cost:95000,days:2.0},
+    {id:'dln',name:'Dalian',country:'CN',region:'China',role:'D',lat:38.95,lon:121.65,cost:95000,days:2.0},
+    {id:'rzh',name:'Rizhao',country:'CN',region:'China',role:'D',lat:35.39,lon:119.55,cost:95000,days:2.0},
+    {id:'sha',name:'Shanghai (Yangshan)',country:'CN',region:'China',role:'D',lat:30.62,lon:122.07,cost:95000,days:2.0},
+    {id:'zhj',name:'Zhanjiang',country:'CN',region:'China',role:'D',lat:21.18,lon:110.40,cost:95000,days:2.0},
+    // Japan
+    {id:'chb',name:'Chiba',country:'JP',region:'Japan',role:'D',lat:35.53,lon:140.07,cost:90000,days:1.8},
+    {id:'ngs',name:'Negishi (Yokohama)',country:'JP',region:'Japan',role:'D',lat:35.40,lon:139.65,cost:90000,days:1.8},
+    {id:'miz',name:'Mizushima',country:'JP',region:'Japan',role:'D',lat:34.50,lon:133.72,cost:90000,days:1.8},
+    // South Korea
+    {id:'uls',name:'Ulsan',country:'KR',region:'South Korea',role:'D',lat:35.50,lon:129.38,cost:85000,days:1.8},
+    {id:'yeo',name:'Yeosu',country:'KR',region:'South Korea',role:'D',lat:34.78,lon:127.75,cost:85000,days:1.8},
+    {id:'des',name:'Daesan',country:'KR',region:'South Korea',role:'D',lat:37.00,lon:126.40,cost:85000,days:1.8},
+    // Taiwan
+    {id:'mai',name:'Mailiao',country:'TW',region:'Taiwan',role:'D',lat:23.78,lon:120.18,cost:80000,days:1.5},
+    {id:'kao',name:'Kaohsiung',country:'TW',region:'Taiwan',role:'D',lat:22.55,lon:120.30,cost:80000,days:1.5},
+    // Russia Pacific
+    {id:'koz',name:'Kozmino',country:'RU',region:'Russia Pacific',role:'L',lat:42.73,lon:133.08,cost:70000,days:1.5},
+    // US Gulf
+    {id:'hou',name:'Houston',country:'US',region:'US Gulf',role:'H',lat:29.73,lon:-95.05,cost:130000,days:2.0},
+    {id:'crp',name:'Corpus Christi',country:'US',region:'US Gulf',role:'L',lat:27.81,lon:-97.40,cost:130000,days:2.0},
+    {id:'bmt',name:'Beaumont',country:'US',region:'US Gulf',role:'H',lat:29.95,lon:-93.93,cost:130000,days:2.0},
+    {id:'loo',name:'LOOP',country:'US',region:'US Gulf',role:'H',lat:28.88,lon:-90.02,cost:120000,days:1.5},
+    // US Atlantic
+    {id:'nyk',name:'New York',country:'US',region:'US Atlantic',role:'D',lat:40.65,lon:-74.05,cost:110000,days:1.8},
+    // US West Coast
+    {id:'lgb',name:'Long Beach',country:'US',region:'US West Coast',role:'D',lat:33.75,lon:-118.20,cost:120000,days:2.0},
+    // Mexico
+    {id:'cay',name:'Cayo Arcas',country:'MX',region:'Mexico',role:'L',lat:20.20,lon:-91.98,cost:90000,days:1.5},
+    // Caribbean / Venezuela
+    {id:'jose',name:'Jose Terminal',country:'VE',region:'Caribbean / Venezuela',role:'L',lat:10.10,lon:-64.78,cost:90000,days:2.0},
+    {id:'amu',name:'Amuay Bay',country:'VE',region:'Caribbean / Venezuela',role:'L',lat:11.75,lon:-70.20,cost:90000,days:2.0},
+    {id:'ste',name:'St Eustatius Island',country:'AN',region:'Caribbean / Venezuela',role:'H',lat:17.49,lon:-62.98,cost:80000,days:1.5},
+    // South America
+    {id:'sao',name:'Sao Sebastiao',country:'BR',region:'South America',role:'H',lat:-23.80,lon:-45.40,cost:95000,days:2.0},
+    {id:'ang',name:'Angra dos Reis',country:'BR',region:'South America',role:'L',lat:-23.01,lon:-44.32,cost:95000,days:2.0},
+  ],
+  routes: [
+    {id:'r_td3c', name:'TD3C · AG→China',     load:'rta', disch:'nbz', distance:6050,  cargo:270000, canal:false, canalCost:0,      vessel:'v_vlcc'},
+    {id:'r_td20', name:'TD20 · WAF→UKC',      load:'bon', disch:'rtm', distance:4300,  cargo:130000, canal:false, canalCost:0,      vessel:'v_suez'},
+    {id:'r_td15', name:'TD15 · WAF→China',    load:'bon', disch:'nbz', distance:11900, cargo:260000, canal:false, canalCost:0,      vessel:'v_vlcc'},
+    {id:'r_agukc',name:'AG→UKC · Suez',       load:'rta', disch:'rtm', distance:6400,  cargo:130000, canal:true,  canalCost:350000, vessel:'v_suez'},
+    {id:'r_fjsin',name:'AG→Singapore · clean',load:'fjr', disch:'sin', distance:3300,  cargo:90000,  canal:false, canalCost:0,      vessel:'v_lr2'},
+    {id:'r_usguk',name:'USG→UKC',             load:'hou', disch:'rtm', distance:4900,  cargo:130000, canal:false, canalCost:0,      vessel:'v_suez'},
+    {id:'r_balt', name:'Baltic→UKC',          load:'pri', disch:'rtm', distance:1306,  cargo:100000, canal:false, canalCost:0,      vessel:'v_afra'},
+    {id:'r_nwefe',name:'NWE→China · products',load:'rtm', disch:'nbz', distance:10400, cargo:90000,  canal:false, canalCost:0,      vessel:'v_lr2'},
+    {id:'r_usgfe',name:'USG→China',           load:'hou', disch:'nbz', distance:9800,  cargo:270000, canal:false, canalCost:0,      vessel:'v_vlcc'},
+  ],
+  // Worldscale WS100 flat rate ($/t) keyed by route — PLACEHOLDERS, user maintained
+  flats: {r_td3c:19.50, r_td20:22.00, r_td15:34.00, r_agukc:24.00, r_fjsin:17.50, r_usguk:23.00, r_balt:9.50, r_nwefe:38.00, r_usgfe:33.00},
+  bunkers: [
+    {id:'b_fjr', port:'Fujairah',  fuel:'VLSFO', price:595},
+    {id:'b_sin', port:'Singapore', fuel:'VLSFO', price:585},
+    {id:'b_rtm', port:'Rotterdam', fuel:'VLSFO', price:560},
+    {id:'b_hou', port:'Houston',   fuel:'VLSFO', price:555},
+    {id:'b_gib', port:'Gibraltar', fuel:'VLSFO', price:600},
+  ],
+};
+
+/* ---------- maritime routing waypoints (schematic sea-lane chokepoints) ---------- */
+const BASIN = {
+  'NW Europe':'NEUR','Baltic / Russia':'BALT','Mediterranean':'MED','Black Sea':'BSEA',
+  'West Africa':'WAF','Middle East Gulf':'AG','Red Sea':'RSEA','India':'IND',
+  'SE Asia':'SEA','China':'FE','Japan':'FE','South Korea':'FE','Taiwan':'FE','Russia Pacific':'FEN',
+  'US Gulf':'USG','US Atlantic':'USAC','US West Coast':'USWC','Mexico':'GMEX','Caribbean / Venezuela':'CARIB','South America':'SAM'
+};
+const WP={
+  channel:[49.2,-6.0],dover:[51.0,1.6],biscay:[45.5,-8.0],finisterre:[43.3,-10.2],
+  gib:[35.95,-5.9],sardinia:[38.5,9.0],sicily:[37.0,11.6],ionian:[35.5,18.5],emed:[33.6,28.0],
+  portsaid:[31.4,32.3],suezS:[29.6,32.6],redN:[27.2,34.8],redM:[20.0,38.6],redS:[14.5,41.8],bab:[12.6,43.4],aden:[12.4,46.5],
+  arabianSea:[14.0,58.0],hormuz:[26.3,56.7],
+  indiaW:[16.0,70.0],indiaS:[6.5,76.5],lanka:[5.5,82.0],bengal:[8.0,86.0],
+  malW:[5.8,94.5],malacca:[2.8,100.2],sing:[1.3,103.9],scs:[12.0,111.0],taiwanS:[22.0,120.5],ecs:[29.0,123.5],
+  capeTown:[-34.6,17.5],cape:[-35.6,20.5],agulhas:[-36.0,25.5],swIndian:[-32.0,46.0],midIndian:[-14.0,72.0],cIndian:[-6.0,80.0],
+  dakar:[14.5,-19.5],guineaOff:[2.5,3.0],angolaOff:[-12.0,9.0],walvis:[-26.0,12.0],
+  satlMid:[-22.0,-8.0],recife:[-8.0,-33.0],
+  trinidad:[11.5,-60.0],caribE:[15.0,-63.0],caribC:[14.5,-74.0],yucatan:[21.5,-86.0],
+  panamaC:[9.4,-79.9],panamaP:[7.2,-79.6],pacificE:[10.0,-100.0],pacificMid:[18.0,-150.0],pacificW:[24.0,-200.0],
+  floridaStr:[24.3,-81.0],hatteras:[34.5,-74.5],gomex:[27.0,-90.0],usAtlOff:[39.0,-71.0]
+};
+
+/* ---------- runtime state (deep copy of seed) ----------
+   The "working voyage" is freely editable: any load / discharge / origin port,
+   distance, cargo, vessel and market inputs. Presets just quick-fill it.
+   The "board" holds saved voyages that stack on the map + analysis. */
+const DB = JSON.parse(JSON.stringify(SEED));
+const state = {
+  // working voyage (everything editable)
+  loadId:'rta', dischId:'nbz', originId:null,
+  distance:6050, cargo:270000, ballastDistance:0,
+  vesselId:'v_vlcc', ws:95, flat:19.50, bunkerId:'b_fjr', bunkerPrice:595, via:'base', canalCost:0,
+  addComm:2.5, brokerComm:1.25,   // address commission + brokerage (% of gross freight)
+  loadIds2:[], dischIds2:[],       // EXTRA load / discharge ports (beyond the primary one)
+  roundTrip:false,                 // add a return ballast leg (last disch → first load)
+  fixings:[],                      // saved fixtures: a voyage + vessel name / class / CP date
+  presetId:'r_td3c',          // which preset is loaded (for highlight); null once edited off-preset
+  distAuto:false,             // true = laden distance auto-derived from the sea route
+  // board of saved voyages + which voyage analysis targets
+  board:[], analyzeId:'work',
+  // analysis controls
+  inc:5, count:5,
+  user:'',
+  ai:{enabled:false, endpoint:'http://localhost:11434/api/generate', model:'llama3.1'},
+  theme:'dark',
+};
+let boardSeq=1;
+let fixingSeq=1;
+
+/* ---------- routing via options ---------- */
+const VIA_DAYS={base:0, cape:3.5, panama:6};
+const WEST_B=['NEUR','BALT','MED','BSEA'], ASIA_B=['FE','FEN','SEA'], AGG_B=['AG','IND','RSEA'];
+/* which routing options a load→disch pair offers, based on basins */
+function viasFor(loadId,dischId){
+  const lp=byId(DB.ports,loadId), dp=byId(DB.ports,dischId);
+  if(!lp||!dp) return ['base'];
+  const a=BASIN[lp.region]||'', b=BASIN[dp.region]||'';
+  const west=WEST_B.includes(a)||WEST_B.includes(b);
+  const asia=ASIA_B.includes(a)||ASIA_B.includes(b);
+  const agg=AGG_B.includes(a)||AGG_B.includes(b);
+  if(west&&asia) return ['base','cape','panama'];   // Europe/Med ↔ Far East
+  if(west&&agg)  return ['base','cape'];             // Europe/Med ↔ Gulf/India
+  return ['base'];
+}
+function routeVias(r){return viasFor(r.load,r.disch);}   // back-compat for route objects
+function viaLabel(k,vias){
+  if(k==='cape') return 'Cape';
+  if(k==='panama') return 'Panama';
+  return vias.length>1 ? 'Suez' : 'Direct';   // base
+}
+function viaFull(k){return k==='cape'?'Cape of Good Hope':k==='panama'?'Panama Canal':'Suez Canal';}
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const byId=(arr,id)=>arr.find(x=>x.id===id);
+const f0=n=>isFinite(n)?Math.round(n).toLocaleString('en-US'):'—';
+const f1=n=>isFinite(n)?n.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1}):'—';
+const usd=n=>(n<0?'-$':'$')+f0(Math.abs(n));
+const compact=n=>{const a=Math.abs(n),s=n<0?'-$':'$';if(a>=1e6)return s+(a/1e6).toFixed(2)+'m';if(a>=1e3)return s+(a/1e3).toFixed(0)+'k';return s+f0(a);};
+const pct=n=>isFinite(n)?n.toFixed(1)+'%':'—';
+function haversineNM(a,b){const R=3440.065,toR=Math.PI/180;const dLat=(b.lat-a.lat)*toR,dLon=(b.lon-a.lon)*toR;
+  const la1=a.lat*toR,la2=b.lat*toR;const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));}
+let toastTimer;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ============================================================
+   CALCULATION ENGINE  (spec-based — any load/disch/origin)
+   spec: {vesselId, loadId, dischId, originId, distance, cargo,
+          ballastDistance?, ws, flat, bunkerPrice, via, canalCost?}
+   ============================================================ */
+function compute(spec){
+  if(!spec) return null;
+  const v=byId(DB.vessels,spec.vesselId);
+  const ld=loadList(spec), dd=dischList(spec);
+  if(!v||!ld.length||!dd.length) return null;        // need a vessel + ≥1 load + ≥1 discharge
+  const lp=byId(DB.ports,ld[0]), dp=byId(DB.ports,dd[dd.length-1]);   // first load → last discharge (for display)
+  if(!lp||!dp) return null;
+  const op=spec.originId?byId(DB.ports,spec.originId):null;
+  const ladenIds=[...ld,...dd];                       // ordered laden call sequence
+  const multi=ladenIds.length>2;
+
+  const ws=+spec.ws||0, flat=+spec.flat||0, bunker=+spec.bunkerPrice||0, cargo=+spec.cargo||0;
+  const addComm=Math.max(0,+spec.addComm||0), brokerComm=Math.max(0,+spec.brokerComm||0);
+  // routing deviation: Cape/Panama extend the laden leg by fixed sea-days at laden speed
+  const allowed=viasFor(ld[0],dd[dd.length-1]);
+  let viaKey=spec.via||'base'; if(!allowed.includes(viaKey)) viaKey='base';
+  const deviationDays=VIA_DAYS[viaKey]||0;
+  const deviationDist=deviationDays*v.ladenSpeed*24;
+  // laden base distance: single-port honours the (manual/auto) field; multi-port sums the sequence
+  const baseDist=multi ? seqDistance(ladenIds,'base') : Math.max(0,+spec.distance||0);
+  const ladenDist=baseDist+deviationDist;
+  // ballast positioning leg = origin → first load
+  let ballastDist=0;
+  if(op) ballastDist=(!multi && spec.ballastDistance!=null && +spec.ballastDistance>0)?+spec.ballastDistance:estDistance(spec.originId,ld[0],'base');
+  // round-trip return leg = last discharge → first load (ballast back)
+  const returnDist=spec.roundTrip?estDistance(dd[dd.length-1],ld[0],'base'):0;
+  const totalBallast=ballastDist+returnDist;
+
+  // Freight: gross = (WS/100) × Flat × Cargo; address comm + brokerage deducted → net to owner
+  const grossFreight=(ws/100)*flat*cargo;
+  const addCommAmt=grossFreight*addComm/100;
+  const brokerCommAmt=grossFreight*brokerComm/100;
+  const commission=addCommAmt+brokerCommAmt;
+  const netFreight=grossFreight-commission;
+  const revenue=netFreight;                       // owner earns freight net of commissions
+  const perWsGross=flat*cargo/100;                // gross revenue per 1 WS point
+  const perWsNet=perWsGross*(1-(addComm+brokerComm)/100);   // net per WS point (hits profit)
+
+  // Sea time = distance / speed / 24
+  const ladenDays=ladenDist/v.ladenSpeed/24;
+  const ballastDays=totalBallast>0?totalBallast/v.ballastSpeed/24:0;
+  // port time / cost = every load + discharge call
+  const allCallPorts=[...ld,...dd].map(id=>byId(DB.ports,id)).filter(Boolean);
+  const portDays=allCallPorts.reduce((s,p)=>s+(p.days||0),0);
+  const totalDays=ladenDays+ballastDays+portDays;
+
+  // Fuel
+  const ladenFuel=v.ladenCons*ladenDays;
+  const ballastFuel=v.ballastCons*ballastDays;
+  const totalFuel=ladenFuel+ballastFuel;
+  const fuelCost=totalFuel*bunker;
+
+  // Port + canal (canal only on the base/Suez routing)
+  const portCost=allCallPorts.reduce((s,p)=>s+(p.cost||0),0);
+  const canalCost=(viaKey==='base')?Math.max(0,+spec.canalCost||0):0;
+
+  const totalCost=fuelCost+portCost+canalCost;
+  const profit=revenue-totalCost;
+  const tce=totalDays>0?profit/totalDays:0;
+
+  // ballast analytics
+  const ballastRatio=(ladenDist+totalBallast)>0?totalBallast/(ladenDist+totalBallast):0;
+  const effScore=Math.max(0,Math.min(100,Math.round(100*(1-ballastRatio))));
+  const ballastCost=ballastFuel*bunker;
+
+  return {v,lp,dp,op,ws,flat,bunker,cargo,ladenDist,baseDist,ballastDist,returnDist,totalBallast,revenue,
+    loadPorts:ld.map(id=>byId(DB.ports,id)).filter(Boolean),dischPorts:dd.map(id=>byId(DB.ports,id)).filter(Boolean),
+    roundTrip:!!spec.roundTrip,
+    grossFreight,netFreight,addComm,brokerComm,addCommAmt,brokerCommAmt,commission,perWsGross,perWsNet,
+    viaKey,deviationDays,deviationDist,
+    ladenDays,ballastDays,portDays,totalDays,
+    ladenFuel,ballastFuel,totalFuel,fuelCost,portCost,canalCost,totalCost,profit,tce,
+    ballastRatio,ballastPct:ballastRatio*100,effScore,ballastCost,
+    name:specName(spec),id:spec.id||'work'};
+}
+
+/* ---------- voyage-spec helpers ---------- */
+function specName(a,b){
+  if(a && typeof a==='object'){                     // a spec
+    const ld=loadList(a), dd=dischList(a);
+    const ln=ld.length?byId(DB.ports,ld[0]):null, dn=dd.length?byId(DB.ports,dd[dd.length-1]):null;
+    const lx=ld.length>1?` +${ld.length-1}`:'', dx=dd.length>1?` +${dd.length-1}`:'';
+    return (ln?ln.name:'—')+lx+' → '+(dn?dn.name:'—')+dx+(a.roundTrip?' ⟲':'');
+  }
+  const p=byId(DB.ports,a), q=byId(DB.ports,b);     // (loadId, dischId)
+  return (p?p.name:'—')+' → '+(q?q.name:'—');
+}
+function workSpec(){return {
+  id:'work', vesselId:state.vesselId, loadId:state.loadId, dischId:state.dischId, originId:state.originId,
+  loadIds:[state.loadId,...(state.loadIds2||[])].filter(Boolean),
+  dischIds:[state.dischId,...(state.dischIds2||[])].filter(Boolean),
+  roundTrip:!!state.roundTrip,
+  distance:state.distance, cargo:state.cargo, ballastDistance:state.ballastDistance,
+  ws:state.ws, flat:state.flat, bunkerId:state.bunkerId, bunkerPrice:state.bunkerPrice, via:state.via, canalCost:state.canalCost,
+  addComm:state.addComm, brokerComm:state.brokerComm};}
+function liveOpts(){return workSpec();}                 // back-compat alias
+function analyzeSpec(){
+  if(state.analyzeId==='combined') return workSpec();
+  if(state.analyzeId==='work') return workSpec();
+  if(typeof state.analyzeId==='string' && state.analyzeId.indexOf('preset:')===0){
+    const r=byId(DB.routes,state.analyzeId.slice(7)); if(r) return presetSpec(r);
+  }
+  const b=state.board.find(x=>x.id===state.analyzeId);
+  return b?b:workSpec();
+}
+/* build a voyage spec from a stored preset, at the current market */
+function presetSpec(r){return {
+  id:'preset:'+r.id, vesselId:r.vessel||state.vesselId, loadId:r.load, dischId:r.disch, originId:null,
+  distance:r.distance, cargo:r.cargo, ballastDistance:0,
+  ws:state.ws, flat:(DB.flats[r.id]!=null?DB.flats[r.id]:state.flat), bunkerId:state.bunkerId, bunkerPrice:state.bunkerPrice,
+  via:'base', canalCost:r.canal?(+r.canalCost||0):0, addComm:state.addComm, brokerComm:state.brokerComm, label:r.name};}
+
+/* estimated distance = length of the schematic sea-lane (sum of great-circle legs) */
+function estDistance(loadId,dischId,via){
+  const a=byId(DB.ports,loadId), b=byId(DB.ports,dischId);
+  if(!a||!b) return 0;
+  const wp=seaRoute(a,b,via||'base'); let d=0;
+  for(let i=0;i<wp.length-1;i++) d+=haversineNM({lat:wp[i][0],lon:wp[i][1]},{lat:wp[i+1][0],lon:wp[i+1][1]});
+  return Math.round(d);
+}
+/* full ordered port lists (primary + extras) for a spec */
+function loadList(s){const a=(s.loadIds&&s.loadIds.length)?s.loadIds.slice():(s.loadId?[s.loadId]:[]);return a.filter(Boolean);}
+function dischList(s){const a=(s.dischIds&&s.dischIds.length)?s.dischIds.slice():(s.dischId?[s.dischId]:[]);return a.filter(Boolean);}
+/* sum of schematic sea-lane distance through an ordered list of port ids */
+function seqDistance(ids,via){let d=0;for(let i=0;i<ids.length-1;i++)d+=estDistance(ids[i],ids[i+1],via);return d;}
+
+/* grouped <optgroup> port options for a select */
+function portOptions(selectedId,noneLabel){
+  const regions=[]; DB.ports.forEach(p=>{if(regions.indexOf(p.region)<0)regions.push(p.region);});
+  let h = noneLabel!=null ? `<option value="" ${!selectedId?'selected':''}>${noneLabel}</option>` : '';
+  regions.forEach(rg=>{
+    h+=`<optgroup label="${rg}">`;
+    DB.ports.filter(p=>p.region===rg).forEach(p=>{
+      h+=`<option value="${p.id}" ${p.id===selectedId?'selected':''}>${p.name}</option>`;});
+    h+='</optgroup>';
+  });
+  return h;
+}
+
+/* ---------- working-voyage mutators (free editing) ---------- */
+function recompBallast(){
+  state.ballastDistance=(state.originId&&state.loadId)?estDistance(state.originId,state.loadId,'base'):0;
+}
+function portChanged(){
+  state.presetId=null;
+  if(state.distAuto!==false) state.distance=estDistance(state.loadId,state.dischId,'base');
+  if(!viasFor(state.loadId,state.dischId).includes(state.via)) state.via='base';
+  if(state.loadId&&state.dischId&&!(+state.cargo>0)){const v=byId(DB.vessels,state.vesselId);if(v)state.cargo=v.dwt;}
+  recompBallast(); refreshAll();
+}
+function setLoad(id){state.loadId=id||null; state.distAuto=true; portChanged();}
+function setDisch(id){state.dischId=id||null; state.distAuto=true; portChanged();}
+function setOrigin(id){state.originId=id||null; recompBallast(); refreshAll();}
+function recompDistance(){ if(state.loadId&&state.dischId){state.distAuto=true; state.distance=estDistance(state.loadId,state.dischId,'base'); refreshAll(); toast('Distance from route: '+f0(state.distance)+' NM'); } }
+function selectVessel(id){state.vesselId=id; state.presetId=null; refreshAll();}
+function loadPreset(id){
+  if(!id){ state.presetId=null; refreshAll(); return; }
+  const r=byId(DB.routes,id); if(!r) return;
+  state.presetId=id; state.loadId=r.load; state.dischId=r.disch;
+  state.loadIds2=[]; state.dischIds2=[]; state.roundTrip=false;
+  state.cargo=r.cargo; state.distance=r.distance; state.distAuto=false;
+  state.canalCost=r.canal?(+r.canalCost||0):0;
+  if(r.vessel)state.vesselId=r.vessel;
+  if(DB.flats[id]!=null)state.flat=DB.flats[id];
+  if(!viasFor(state.loadId,state.dischId).includes(state.via))state.via='base';
+  recompBallast(); refreshAll();
+}
+function clearVoyage(){
+  state.loadId=null; state.dischId=null; state.originId=null;
+  state.loadIds2=[]; state.dischIds2=[]; state.roundTrip=false;
+  state.distance=0; state.cargo=0; state.canalCost=0; state.ballastDistance=0;
+  state.presetId=null; state.via='base'; state.distAuto=true;
+  refreshAll(); toast('Selections cleared');
+}
+/* ---------- multi-port (extra load / discharge calls) + round trip ---------- */
+function addLoadPort(id){ if(!id)return; if(id!==state.loadId && !(state.loadIds2||[]).includes(id)){ state.loadIds2=[...(state.loadIds2||[]),id]; state.presetId=null; refreshAll(); } }
+function addDischPort(id){ if(!id)return; if(id!==state.dischId && !(state.dischIds2||[]).includes(id)){ state.dischIds2=[...(state.dischIds2||[]),id]; state.presetId=null; refreshAll(); } }
+function removeLoadPort(id){ state.loadIds2=(state.loadIds2||[]).filter(x=>x!==id); refreshAll(); }
+function removeDischPort(id){ state.dischIds2=(state.dischIds2||[]).filter(x=>x!==id); refreshAll(); }
+function toggleRoundTrip(on){ state.roundTrip=!!on; refreshAll(); }
+/* chain: save this voyage to the board, then start a new one ballasting from its last discharge */
+function chainVoyage(){
+  const spec=workSpec();
+  if(!compute(spec)){ toast('Build a voyage first'); return; }
+  spec.id='brd_'+(boardSeq++); spec.label=specName(spec); spec.chained=true;
+  state.board.push(spec);
+  const lastDisch=dischList(spec).slice(-1)[0];          // next voyage ballasts from here
+  state.originId=lastDisch||null;
+  state.loadId=null; state.dischId=null; state.loadIds2=[]; state.dischIds2=[];
+  state.roundTrip=false; state.presetId=null; state.distance=0; state.cargo=0; state.distAuto=true;
+  recompBallast();
+  renderBoard(); renderMapStack(); renderAnalyzeSelect();
+  if(mapReady){drawPorts();drawRoute();}
+  toast('Voyage stacked — next leg starts at '+(byId(DB.ports,lastDisch)?byId(DB.ports,lastDisch).name:'discharge'));
+}
+
+/* ---------- voyage board (stacking) ---------- */
+function addToBoard(){
+  const spec=workSpec();
+  if(!compute(spec)){ toast('Pick load + discharge first'); return; }
+  spec.id='brd_'+(boardSeq++); spec.label=specName(spec);
+  state.board.push(spec);
+  renderBoard(); renderMapStack(); renderAnalyzeSelect();
+  if(mapReady){drawPorts();drawRoute();}
+  toast('Added to board · '+spec.label);
+}
+function removeBoard(id){
+  state.board=state.board.filter(b=>b.id!==id);
+  if(state.analyzeId===id)state.analyzeId='work';
+  renderBoard(); renderMapStack(); renderAnalyzeSelect(); renderAnalysis();
+  if(mapReady){drawPorts();drawRoute();}
+}
+function clearBoard(){
+  state.board=[]; state.analyzeId='work';
+  renderBoard(); renderMapStack(); renderAnalyzeSelect(); renderAnalysis();
+  if(mapReady){drawPorts();drawRoute();}
+  toast('Board cleared');
+}
+function focusBoard(id){ state.analyzeId=id; renderAnalyzeSelect(); renderAnalysis(); renderMapStack(); toast('Analysing '+ (byId(state.board,id)?byId(state.board,id).label:'voyage')); }
+function setAnalyze(id){state.analyzeId=id; renderAnalysis();}
+
+/* compute a stacked voyage using the vessel chosen on the map (the "program vessel") */
+function progCompute(b){ return compute(Object.assign({},b,{vesselId:state.vesselId})); }
+/* the floating voyage panel on the map (top-right) */
+function renderMapStack(){
+  const mv=$('mapVessel');
+  if(mv) mv.innerHTML=DB.vessels.map(x=>`<option value="${x.id}" ${x.id===state.vesselId?'selected':''}>${x.type} · ${f0(x.dwt)} dwt</option>`).join('');
+  const list=$('mapStack'); const n=state.board.length;
+  if(list){
+    if(!n) list.innerHTML='<div class="ms-empty">No voyages staged yet. Build one below, then <b>＋ Voy</b> to start the next leg, or <b>✓ End voy</b> to fix it here.</div>';
+    else list.innerHTML=state.board.map((b,i)=>{
+      const c=progCompute(b), col=stackColor(i), cur=state.analyzeId===b.id;
+      return `<div class="ms-row ${cur?'cur':''}" data-focus="${b.id}">
+        <span class="ms-sw" style="background:${col}"></span><span class="ms-vn">V${i+1}</span>
+        <span class="ms-nm">${b.label||specName(b)}</span>
+        <span class="ms-tce ${c&&c.tce>=0?'pos':'neg'}">${c?compact(c.tce):'—'}</span>
+        <button class="ms-x" data-rmboard="${b.id}" title="Remove">×</button></div>`;
+    }).join('');
+  }
+  const comb=$('mpCombined');
+  if(comb){
+    if(n){
+      let prof=0,days=0; state.board.forEach(b=>{const c=progCompute(b); if(c){prof+=c.profit;days+=c.totalDays;}});
+      const tce=days>0?prof/days:0;
+      comb.style.display='block';
+      comb.innerHTML=`<div class="mc-head">Combined program · ${n} voy</div>
+        <div class="mc-row"><span>Blended TCE</span><b class="${tce>=0?'pos':'neg'}">${compact(tce)}/d</b></div>
+        <div class="mc-row"><span>Total profit</span><b class="${prof>=0?'pos':'neg'}">${compact(prof)}</b></div>
+        <div class="mc-row"><span>Duration</span><b>${f1(days)} d</b></div>
+        <button class="mc-clear" id="msClear">Clear all</button>`;
+    } else comb.style.display='none';
+  }
+  const fb=$('btnFixShow');
+  if(fb){ const any=(state.fixings||[]).length, on=(state.fixings||[]).filter(f=>f.showOnMap).length;
+    fb.textContent= any?(on?`◉ Fixings shown (${on})`:`◎ Show fixings (${any})`):'No fixings saved';
+    fb.classList.toggle('on',on>0); fb.disabled=!any; }
+}
+/* fix the current voyage into the stack and clear the builder for the next program leg */
+function endVoyage(){
+  const spec=workSpec();
+  if(!compute(spec)){ toast('Build a voyage first (load + discharge)'); return; }
+  spec.id='brd_'+(boardSeq++); spec.label=specName(spec);
+  state.board.push(spec);
+  state.loadId=null; state.dischId=null; state.originId=null; state.loadIds2=[]; state.dischIds2=[];
+  state.roundTrip=false; state.presetId=null; state.distance=0; state.cargo=0; state.distAuto=true;
+  recompBallast(); refreshAll();
+  toast('Voyage fixed into the stack · V'+state.board.length);
+}
+/* show / hide ALL saved fixings on the map at once */
+function toggleAllFixings(){
+  const any=(state.fixings||[]).length; if(!any){ toast('No fixings saved yet'); return; }
+  const target=state.fixings.filter(f=>f.showOnMap).length===0;   // none shown → show all; else hide all
+  state.fixings.forEach(f=>f.showOnMap=target);
+  renderFixings(); renderMapStack(); if(mapReady){drawPorts();drawRoute();}
+  toast(target?'Showing fixings on map':'Fixings hidden');
+}
+function stackColor(i){ const cols=['#FFB454','#8B7BFF','#39C7C7','#FF8FB0','#9CCB5A','#E0A93F']; return cols[i%cols.length]; }
+
+/* ---------- tab switching ---------- */
+function goTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.tab===tab));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id==='screen-'+tab));
+  const ct=document.querySelector('.content'); if(ct)ct.scrollTop=0;
+  if(tab==='map'){initMap();kickMap();renderMapHud();}
+  if(tab==='analysis'){renderAnalyzeSelect();renderAnalysis();}
+  if(tab==='settings'){syncSettingsUI();renderDB();}
+  if(tab==='fixings'){renderFixForm();renderFixings();}
+}
+
+/* ---------- fixings (saved fixtures under vessel name + CP date) ---------- */
+/* ---------- fixings: standalone draft (free input, independent of the calculator) ---------- */
+const fixDraft={ vesselId:state.vesselId, vesselName:'', cpDate:'', loadId:null, dischId:null,
+  loadIds2:[], dischIds2:[], originId:null, roundTrip:false, cargo:0, ws:state.ws, distance:0, note:'' };
+function fixDraftSpec(){ return {
+  vesselId:fixDraft.vesselId, loadId:fixDraft.loadId, dischId:fixDraft.dischId,
+  loadIds:[fixDraft.loadId,...fixDraft.loadIds2].filter(Boolean), dischIds:[fixDraft.dischId,...fixDraft.dischIds2].filter(Boolean),
+  originId:fixDraft.originId, roundTrip:!!fixDraft.roundTrip, cargo:+fixDraft.cargo||0,
+  distance:(+fixDraft.distance>0?+fixDraft.distance:estDistance(fixDraft.loadId,fixDraft.dischId,'base')), ballastDistance:0,
+  ws:+fixDraft.ws||0, flat:state.flat, bunkerId:state.bunkerId, bunkerPrice:state.bunkerPrice, via:'base', canalCost:0,
+  addComm:state.addComm, brokerComm:state.brokerComm }; }
+function renderFixForm(){
+  const ae=document.activeElement;
+  if($('fixClass')) $('fixClass').innerHTML=DB.vessels.map(x=>`<option value="${x.id}" ${x.id===fixDraft.vesselId?'selected':''}>${x.type}</option>`).join('');
+  if($('fixLoad')) $('fixLoad').innerHTML=portOptions(fixDraft.loadId,'— load —');
+  if($('fixDisch')) $('fixDisch').innerHTML=portOptions(fixDraft.dischId,'— discharge —');
+  if($('fixVessel')&&ae!==$('fixVessel')) $('fixVessel').value=fixDraft.vesselName||'';
+  if($('fixCp')) $('fixCp').value=fixDraft.cpDate||new Date().toISOString().slice(0,10);
+  if($('fixCargo')&&ae!==$('fixCargo')) $('fixCargo').value=fixDraft.cargo?Math.round(fixDraft.cargo):'';
+  if($('fixWs')&&ae!==$('fixWs')) $('fixWs').value=fixDraft.ws||'';
+  if($('fixNote')&&ae!==$('fixNote')) $('fixNote').value=fixDraft.note||'';
+  renderFixPreview();
+}
+function renderFixPreview(){
+  const pv=$('fixPreview'); if(!pv) return;
+  const c=compute(fixDraftSpec());
+  pv.innerHTML = c ? `<span class="fp-r">${specName(fixDraftSpec())}</span> · ${f0(c.ladenDist)} NM · ${f1(c.totalDays)}d · <b class="${c.tce>=0?'pos':'neg'}">TCE ${usd(c.tce)}</b>`
+    : '<span class="fp-empty">Pick a load and a discharge port to preview the economics.</span>';
+}
+/* pull the current calculator voyage into the fixings form (preserves multi-port + round trip) */
+function takeFromCalc(){
+  const w=workSpec();
+  if(!compute(w)){ toast('Nothing to take — build a voyage first'); return; }
+  fixDraft.vesselId=state.vesselId; fixDraft.loadId=state.loadId; fixDraft.dischId=state.dischId;
+  fixDraft.loadIds2=(state.loadIds2||[]).slice(); fixDraft.dischIds2=(state.dischIds2||[]).slice();
+  fixDraft.originId=state.originId||null; fixDraft.roundTrip=!!state.roundTrip;
+  fixDraft.cargo=state.cargo; fixDraft.ws=state.ws; fixDraft.distance=+state.distance||0;
+  const v=byId(DB.vessels,state.vesselId); if(v&&!fixDraft.vesselName) fixDraft.vesselName='';
+  renderFixForm(); toast('Pulled from calculator');
+}
+function saveFixing(){
+  const spec=fixDraftSpec();
+  if(!compute(spec)){ toast('Pick a load and discharge port first'); return; }
+  const v=byId(DB.vessels,fixDraft.vesselId);
+  const name=fixDraft.vesselName.trim()|| (v?v.type:'Vessel');
+  const fx={id:'fix_'+(fixingSeq++), vesselName:name, vesselClass:v?v.type:'', cpDate:fixDraft.cpDate||($('fixCp')&&$('fixCp').value)||'',
+    note:fixDraft.note.trim(), savedAt:new Date().toISOString().slice(0,10), spec:JSON.parse(JSON.stringify(spec)), showOnMap:true};
+  state.fixings.unshift(fx);
+  // reset the draft for the next entry (keep vessel class)
+  fixDraft.vesselName=''; fixDraft.note=''; fixDraft.loadId=null; fixDraft.dischId=null;
+  fixDraft.loadIds2=[]; fixDraft.dischIds2=[]; fixDraft.originId=null; fixDraft.roundTrip=false; fixDraft.cargo=0; fixDraft.distance=0;
+  renderFixForm(); renderFixings(); renderMapStack(); if(mapReady){drawPorts();drawRoute();}
+  toast('Fixing saved · '+name);
+}
+function deleteFixing(id){ state.fixings=state.fixings.filter(f=>f.id!==id); renderFixings(); renderMapStack(); if(mapReady){drawPorts();drawRoute();} }
+function toggleFixingMap(id){ const f=byId(state.fixings,id); if(f){ f.showOnMap=!f.showOnMap; renderFixings(); renderMapStack(); if(mapReady){drawPorts();drawRoute();} } }
+function loadFixing(id){
+  const f=byId(state.fixings,id); if(!f)return; const s=f.spec;
+  state.vesselId=s.vesselId; state.loadId=loadList(s)[0]||null; state.dischId=dischList(s)[0]||null;
+  state.loadIds2=loadList(s).slice(1); state.dischIds2=dischList(s).slice(1);
+  state.originId=s.originId||null; state.roundTrip=!!s.roundTrip;
+  state.cargo=s.cargo; state.distance=s.distance; state.distAuto=false; state.canalCost=s.canalCost||0;
+  state.ws=s.ws; state.flat=s.flat; state.bunkerId=s.bunkerId; state.bunkerPrice=s.bunkerPrice;
+  if(s.addComm!=null)state.addComm=s.addComm; if(s.brokerComm!=null)state.brokerComm=s.brokerComm;
+  state.via=s.via||'base'; state.presetId=null;
+  recompBallast(); refreshAll(); goTab('voyages');
+  toast('Loaded fixing · '+f.vesselName);
+}
+function renderFixings(){
+  const el=$('fixList'); if(!el)return;
+  // default CP date field to today if empty
+  if($('fixCp')&&!$('fixCp').value) $('fixCp').value=new Date().toISOString().slice(0,10);
+  const n=state.fixings.length;
+  $('fixCount').textContent=n?`${n} saved`:'';
+  if(!n){ el.innerHTML='<div class="sub-label">No saved fixings yet. Build a voyage on the Voyages tab, then save it here under a vessel name and CP date. Saved fixings draw their course on the map.</div>'; return; }
+  el.innerHTML=state.fixings.map(f=>{
+    const c=compute(f.spec), nm=specName(f.spec);
+    return `<div class="fix-card">
+      <div class="fix-top"><div class="fix-vsl">${f.vesselName}${f.vesselClass?`<span class="fix-cls">${f.vesselClass}</span>`:''}</div>
+        <div class="fix-cp">${f.cpDate?('CP '+f.cpDate):('saved '+f.savedAt)}</div></div>
+      <div class="fix-route">${nm}</div>
+      <div class="fix-meta">${c?`${f.spec.cargo?f0(f.spec.cargo)+' t · ':''}${f0(c.ladenDist)} NM · ${f1(c.totalDays)}d · TCE ${usd(c.tce)}`:'—'}</div>
+      ${f.note?`<div class="fix-note">“${f.note}”</div>`:''}
+      <div class="fix-btns">
+        <button class="fb ${f.showOnMap?'on':''}" data-fixmap="${f.id}">${f.showOnMap?'◉ On map':'◎ Show on map'}</button>
+        <button class="fb" data-fixload="${f.id}">Load</button>
+        <button class="fb del" data-fixdel="${f.id}">Delete</button>
+      </div></div>`;
+  }).join('');
+}
+
+/* render the board list + the analysis subject dropdown */
+function renderBoard(){
+  const el=$('boardList'); if(!el) return;
+  const n=state.board.length;
+  $('boardCount').textContent=n?n+' saved':'';
+  $('boardActions').style.display=n?'flex':'none';
+  if(!n){ el.innerHTML='<div class="sub-label">No saved voyages yet. Build one above and tap <b style="color:var(--glow)">Add to board</b> to stack it on the map and compare it on the Analysis tab.</div>'; return; }
+  el.innerHTML=state.board.map(b=>{
+    const c=compute(b), v=byId(DB.vessels,b.vesselId);
+    const viaTag=(b.via&&b.via!=='base')?' · '+viaLabel(b.via,viasFor(loadList(b)[0],dischList(b).slice(-1)[0])):'';
+    const nL=loadList(b).length, nD=dischList(b).length;
+    const portTag=(nL>1||nD>1)?` · ${nL}L/${nD}D`:''; const rtTag=b.roundTrip?' · round trip':'';
+    return `<div class="cmp">
+      <div class="body"><div class="nm">${b.label||specName(b)}</div>
+        <div class="sub">${v?v.type:''} · ${c?f0(c.ladenDist):f0(b.distance)} NM · WS ${f1(b.ws)}${portTag}${rtTag}${viaTag}</div></div>
+      <div class="figs"><div class="tce ${c&&c.tce>=0?'pos':'neg'}">${c?usd(c.tce):'—'}</div><div class="pf">${c?compact(c.profit):''} profit</div></div>
+      <button class="del" data-rmboard="${b.id}" title="Remove from board">×</button></div>`;
+  }).join('');
+}
+function renderAnalyzeSelect(){
+  const sel=$('selAnalyze'); if(!sel) return;
+  if(state.analyzeId==='combined' && !state.board.length) state.analyzeId='work';
+  let h=`<option value="work">Working voyage · ${specName(workSpec())}</option>`;
+  if(state.board.length){ h+=`<option value="combined">▣ Combined program · ${state.board.length} voyage${state.board.length>1?'s':''}</option>`;
+    h+='<optgroup label="Staged voyages">';
+    state.board.forEach((b,i)=>{h+=`<option value="${b.id}">V${i+1} · ${b.label||specName(b)}</option>`;}); h+='</optgroup>'; }
+  h+='<optgroup label="Preset routes">';
+  DB.routes.forEach(r=>{h+=`<option value="preset:${r.id}">${r.name}</option>`;});
+  h+='</optgroup>';
+  sel.innerHTML=h; sel.value=state.analyzeId;
+}
+
+/* WS sensitivity band centered on a spec's WS */
+function wsScenarios(spec){
+  const n=state.count, inc=state.inc, out=[]; const baseWs=+spec.ws||0;
+  const start=baseWs-Math.floor(n/2)*inc;
+  for(let i=0;i<n;i++){
+    const ws=+(start+i*inc).toFixed(2);
+    const c=compute(Object.assign({},spec,{ws})); if(!c)continue;
+    out.push({ws,revenue:c.revenue,profit:c.profit,tce:c.tce});
+  }
+  return out;
+}
+
+/* great-circle interpolation for map lines */
+function gc(a,b,n){const toR=Math.PI/180,toD=180/Math.PI;
+  const la1=a[0]*toR,lo1=a[1]*toR,la2=b[0]*toR,lo2=b[1]*toR;
+  const d=2*Math.asin(Math.sqrt(Math.sin((la2-la1)/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin((lo2-lo1)/2)**2));
+  if(!d)return[a,b];const pts=[];
+  for(let i=0;i<=n;i++){const f=i/n,A=Math.sin((1-f)*d)/Math.sin(d),B=Math.sin(f*d)/Math.sin(d);
+    const x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2);
+    const y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2);
+    const z=A*Math.sin(la1)+B*Math.sin(la2);
+    pts.push([Math.atan2(z,Math.sqrt(x*x+y*y))*toD,Math.atan2(y,x)*toD]);}
+  return pts;}
+function pathThrough(coords){let p=[];for(let i=0;i<coords.length-1;i++){const s=gc(coords[i],coords[i+1],18);if(i>0)s.shift();p=p.concat(s);}return p;}
+
+/* keep a polyline continuous across the antimeridian (no horizontal slash) */
+function unwrap(pts){
+  if(!pts.length)return pts;
+  const out=[pts[0].slice()];
+  for(let i=1;i<pts.length;i++){
+    let la=pts[i][0],lo=pts[i][1],prev=out[i-1][1];
+    while(lo-prev>180)lo-=360; while(lo-prev<-180)lo+=360;
+    out.push([la,lo]);
+  }
+  return out;
+}
+
+/* build a schematic but believable sea-lane between two ports for a given routing.
+   Threads canonical chokepoints (Suez/Bab/Malacca/Cape/Panama/Gibraltar/Channel…). */
+function seaRoute(from,to,via){
+  const A=BASIN[from.region]||'', B=BASIN[to.region]||'';
+  const f=[from.lat,from.lon], t=[to.lat,to.lon];
+  const W=WP, set=(...k)=>k.map(x=>W[x]);
+  // Malacca corridor tail: continue past Singapore to the China/Japan approaches (SCS, Taiwan Str)
+  // ONLY when the eastern endpoint is genuinely in the Far East — not when it IS in SE Asia (Singapore etc.)
+  const eastTail=eB=>(eB==='SEA')?set('malW','malacca','sing'):set('malW','malacca','sing','scs','taiwanS');
+  const west=new Set(WEST_B), asia=new Set(ASIA_B), agg=new Set(AGG_B);
+  const amer=new Set(['USG','USAC','USWC','GMEX','CARIB','SAM']);
+  const isMed=reg=>['MED','BSEA'].includes(reg);
+
+  // --- Europe/Med <-> Far East ---
+  if((west.has(A)&&asia.has(B))||(west.has(B)&&asia.has(A))){
+    const wEnd=west.has(A)?from:to, eEnd=west.has(A)?to:from;
+    const w=[wEnd.lat,wEnd.lon], e=[eEnd.lat,eEnd.lon];
+    const med=isMed(BASIN[wEnd.region]), eB=BASIN[eEnd.region]; let mid;
+    if(via==='cape'){
+      mid=(med?set('sicily','gib','finisterre'):set('biscay','finisterre'))
+        .concat(set('dakar','guineaOff','walvis','cape','agulhas','swIndian','midIndian')).concat(eastTail(eB));
+    } else if(via==='panama'){
+      mid=(med?set('sicily','gib'):set('channel'))
+        .concat(set('hatteras','floridaStr','caribC','panamaC','panamaP','pacificE','pacificMid','pacificW','ecs'));
+    } else {
+      mid=(med?set('sicily','ionian','emed'):set('channel','gib','sicily','ionian','emed'))
+        .concat(set('portsaid','suezS','redN','redS','bab','aden','arabianSea','indiaS','lanka')).concat(eastTail(eB));
+    }
+    const canon=[w,...mid,e]; return west.has(A)?canon:canon.slice().reverse();
+  }
+  // --- Europe/Med <-> Gulf/India/Red Sea ---
+  if((west.has(A)&&agg.has(B))||(west.has(B)&&agg.has(A))){
+    const wEnd=west.has(A)?from:to, gEnd=west.has(A)?to:from;
+    const w=[wEnd.lat,wEnd.lon], g=[gEnd.lat,gEnd.lon];
+    const med=isMed(BASIN[wEnd.region]), Bb=BASIN[gEnd.region]; let mid;
+    if(via==='cape'){
+      mid=(med?set('sicily','gib','finisterre'):set('biscay','finisterre'))
+        .concat(set('dakar','guineaOff','walvis','cape','agulhas','swIndian','midIndian'));
+      if(Bb==='AG')mid=mid.concat(set('arabianSea','hormuz'));
+      else if(Bb==='IND')mid=mid.concat(set('cIndian'));
+      else mid=mid.concat(set('arabianSea','aden','bab'));
+    } else {
+      mid=(med?set('sicily','ionian','emed'):set('channel','gib','sicily','ionian','emed')).concat(set('portsaid','suezS','redN'));
+      if(Bb!=='RSEA'){ mid=mid.concat(set('redS','bab','aden'));
+        if(Bb==='AG')mid=mid.concat(set('arabianSea','hormuz')); else if(Bb==='IND')mid=mid.concat(set('indiaW')); }
+    }
+    const canon=[w,...mid,g]; return west.has(A)?canon:canon.slice().reverse();
+  }
+  // --- Gulf/India/Red Sea <-> Far East (Malacca) ---
+  if((agg.has(A)&&asia.has(B))||(agg.has(B)&&asia.has(A))){
+    const gEnd=agg.has(A)?from:to, eEnd=agg.has(A)?to:from;
+    const g=[gEnd.lat,gEnd.lon], e=[eEnd.lat,eEnd.lon], Ag=BASIN[gEnd.region], eB=BASIN[eEnd.region]; let mid=[];
+    if(Ag==='AG')mid=mid.concat(set('hormuz','arabianSea'));
+    else if(Ag==='RSEA')mid=mid.concat(set('bab','aden','arabianSea'));
+    mid=mid.concat(set('indiaS','lanka')).concat(eastTail(eB));
+    const canon=[g,...mid,e]; return agg.has(A)?canon:canon.slice().reverse();
+  }
+  // --- West Africa <-> Far East (Cape) ---
+  if((A==='WAF'&&asia.has(B))||(B==='WAF'&&asia.has(A))){
+    const wEnd=A==='WAF'?from:to, eEnd=A==='WAF'?to:from;
+    const w=[wEnd.lat,wEnd.lon], e=[eEnd.lat,eEnd.lon], eB=BASIN[eEnd.region];
+    const mid=set('angolaOff','walvis','cape','agulhas','swIndian','midIndian').concat(eastTail(eB));
+    const canon=[w,...mid,e]; return A==='WAF'?canon:canon.slice().reverse();
+  }
+  // --- West Africa <-> Europe/Med (up the Atlantic) ---
+  if((A==='WAF'&&west.has(B))||(B==='WAF'&&west.has(A))){
+    const wEnd=A==='WAF'?from:to, uEnd=A==='WAF'?to:from;
+    const w=[wEnd.lat,wEnd.lon], u=[uEnd.lat,uEnd.lon], med=isMed(BASIN[uEnd.region]);
+    let mid=set('guineaOff','dakar','finisterre'); mid=mid.concat(med?set('gib','sicily'):set('biscay','channel'));
+    const canon=[w,...mid,u]; return A==='WAF'?canon:canon.slice().reverse();
+  }
+  // --- Americas <-> Europe/Med (trans-Atlantic) ---
+  if((amer.has(A)&&west.has(B))||(amer.has(B)&&west.has(A))){
+    const aEnd=amer.has(A)?from:to, uEnd=amer.has(A)?to:from;
+    const a0=[aEnd.lat,aEnd.lon], u=[uEnd.lat,uEnd.lon], med=isMed(BASIN[uEnd.region]), Am=BASIN[aEnd.region]; let head;
+    if(Am==='USG'||Am==='GMEX')head=set('gomex','floridaStr','hatteras');
+    else if(Am==='CARIB')head=set('caribE','hatteras');
+    else if(Am==='SAM')head=set('recife','satlMid');
+    else head=set('usAtlOff');
+    const mid=head.concat(med?set('gib','sicily'):set('channel'));
+    const canon=[a0,...mid,u]; return amer.has(A)?canon:canon.slice().reverse();
+  }
+  // --- Americas <-> Far East (Panama / Pacific) ---
+  if((amer.has(A)&&asia.has(B))||(amer.has(B)&&asia.has(A))){
+    const aEnd=amer.has(A)?from:to, eEnd=amer.has(A)?to:from;
+    const a0=[aEnd.lat,aEnd.lon], e=[eEnd.lat,eEnd.lon], Am=BASIN[aEnd.region]; let mid;
+    if(Am==='USWC')mid=set('pacificMid','pacificW','ecs');
+    else if(Am==='SAM')mid=set('recife','satlMid','cape','agulhas','midIndian','malW','malacca','sing','scs','taiwanS');
+    else{
+      const head=(Am==='USG'||Am==='GMEX')?set('gomex','yucatan','panamaC','panamaP'):set('caribC','panamaC','panamaP');
+      mid=head.concat(set('pacificE','pacificMid','pacificW','ecs'));
+    }
+    const canon=[a0,...mid,e]; return amer.has(A)?canon:canon.slice().reverse();
+  }
+  // --- Baltic <-> North Sea (round Skagen) ---
+  if((A==='BALT'&&B==='NEUR')||(A==='NEUR'&&B==='BALT')){
+    const bEnd=A==='BALT'?from:to, nEnd=A==='BALT'?to:from;
+    const canon=[[bEnd.lat,bEnd.lon],[55.4,11.0],[57.7,10.6],[56.5,6.5],[nEnd.lat,nEnd.lon]];
+    return A==='BALT'?canon:canon.slice().reverse();
+  }
+  // fallback: direct great-circle (handles intra-basin short hops)
+  return [f,t];
+}
+
+/* ============================================================
+   DETERMINISTIC COMMENTARY  (always available; AI off)
+   ============================================================ */
+function voyageCommentary(c){
+  const out=[];
+  const fuelShare=c.totalCost>0?c.fuelCost/c.totalCost*100:0;
+  const portShare=c.totalCost>0?c.portCost/c.totalCost*100:0;
+  out.push(`Net freight of <b>${compact(c.revenue)}</b> drives the voyage, against <b>${compact(c.totalCost)}</b> of cost — bunkers are <b>${fuelShare.toFixed(0)}%</b> of expense, port costs ${portShare.toFixed(0)}%${c.canalCost>0?`, canal ${(c.canalCost/c.totalCost*100).toFixed(0)}%`:''}.`);
+  if(c.profit>=0) out.push(`The voyage clears <b>${compact(c.profit)}</b> over ${f1(c.totalDays)} days for a TCE of <b>${usd(c.tce)}/day</b>.`);
+  else out.push(`The voyage runs a loss of <b>${compact(c.profit)}</b>, giving a negative TCE of <b>${usd(c.tce)}/day</b> at WS ${c.ws}.`);
+  const perWs=c.perWsNet;
+  if(perWs>0){const beWs=c.totalCost/perWs;out.push(`Breakeven sits at <b>WS ${beWs.toFixed(1)}</b> — you are ${(c.ws-beWs).toFixed(1)} points ${c.ws>=beWs?'above':'below'} cover.`);}
+  if(c.ballastDist>0) out.push(`Empty steaming of ${f0(c.ballastDist)} NM is ${pct(c.ballastPct)} of total distance, an efficiency score of <b>${c.effScore}/100</b>.`);
+  return out;
+}
+function analysisCommentary(c,cmp,rankKey){
+  const out=[];
+  const per1=c.perWsNet;
+  const per5tce=c.totalDays>0?(5*per1)/c.totalDays:0;
+  out.push(`Each <b>+1 WS</b> point moves profit by <b>${usd(per1)}</b>; <b>+5 points</b> lifts TCE by <b>${usd(per5tce)}/day</b> — fixed across the band.`);
+  if(cmp&&cmp.length>1){
+    const best=cmp[0], cur=cmp.find(x=>x.id===c.id);
+    if(best.id!==c.id&&cur){
+      const dTce=best.tce-cur.tce, dp=cur.tce!==0?dTce/Math.abs(cur.tce)*100:0;
+      out.push(`Best of the set is <b>${best.dp.name}</b> at <b>${usd(best.tce)}/day</b> — ${dp>0?'+':''}${dp.toFixed(0)}% on TCE versus this voyage.`);
+    } else {
+      out.push(`This voyage to <b>${c.dp.name}</b> ranks best of the set on ${rankKey==='tce'?'daily earnings':rankKey==='profit'?'voyage profit':rankKey==='breakeven'?'breakeven Worldscale — it needs the least market to cover costs':'ballast efficiency'}.`);
+    }
+    const hiRev=[...cmp].sort((a,b)=>b.revenue-a.revenue)[0];
+    if(hiRev.id!==best.id) out.push(`<b>${hiRev.dp.name}</b> books the highest gross revenue (${compact(hiRev.revenue)}) but not the best daily return — duration dilutes it.`);
+  }
+  out.push(`Ballast deployment scores <b>${c.effScore}/100</b> (${pct(c.ballastPct)} of distance empty)${c.ballastDist===0?' — laden-basis, no positioning leg set':''}.`);
+  return out;
+}
+
+/* ============================================================
+   RENDERERS
+   ============================================================ */
+function renderContext(){
+  const c=compute(workSpec());
+  if(!c){$('ctxChip').innerHTML='Select ports';return;}
+  $('ctxChip').innerHTML=`<b>${c.v.type}</b> · ${c.lp.name.split(' ')[0]}→${c.dp.name.split(' ')[0]}`;
+}
+
+function renderVoyageInputs(){
+  const v=byId(DB.vessels,state.vesselId);
+  $('selVessel').innerHTML=DB.vessels.map(x=>`<option value="${x.id}" ${x.id===state.vesselId?'selected':''}>${x.type} · ${f0(x.dwt)} dwt</option>`).join('');
+  $('vDwt').textContent=v?f0(v.dwt)+' t':'—';
+  $('vSpd').textContent=v?f1(v.ladenSpeed)+' / '+f1(v.ballastSpeed)+' kn':'—';
+  // preset quick-fill
+  $('selPreset').innerHTML=`<option value="">— Custom / pick ports —</option>`+
+    DB.routes.map(r=>`<option value="${r.id}" ${r.id===state.presetId?'selected':''}>${r.name}</option>`).join('');
+  // origin / load / discharge — full grouped port lists, freely chosen
+  $('selOrigin').innerHTML=portOptions(state.originId,'None · laden basis');
+  $('selLoad').innerHTML=portOptions(state.loadId,'— Select load —');
+  $('selDisch').innerHTML=portOptions(state.dischId,'— Select discharge —');
+  // multi-port: add-call selects + chips for extra load/discharge calls
+  if($('selAddLoad')) $('selAddLoad').innerHTML=portOptions(null,'＋ add load call');
+  if($('selAddDisch')) $('selAddDisch').innerHTML=portOptions(null,'＋ add discharge call');
+  const lz=(state.loadIds2||[]), dz=(state.dischIds2||[]);
+  if($('extraPorts')){
+    let ph='';
+    if(lz.length){ ph+=`<div class="chip-row"><span class="chip-lbl">+Loads</span>`+lz.map(id=>{const p=byId(DB.ports,id);return `<span class="pchip load">${p?p.name:id}<button data-rmload="${id}">×</button></span>`;}).join('')+`</div>`; }
+    if(dz.length){ ph+=`<div class="chip-row"><span class="chip-lbl">+Dischs</span>`+dz.map(id=>{const p=byId(DB.ports,id);return `<span class="pchip disch">${p?p.name:id}<button data-rmdisch="${id}">×</button></span>`;}).join('')+`</div>`; }
+    $('extraPorts').innerHTML=ph; $('extraPorts').style.display=(lz.length||dz.length)?'block':'none';
+  }
+  if($('rtToggle')) $('rtToggle').checked=!!state.roundTrip;
+  const isMulti=lz.length>0||dz.length>0;
+  const lp=byId(DB.ports,state.loadId), dp=byId(DB.ports,state.dischId);
+  // distance / cargo / canal (all editable; multi-port distance is auto-summed by the engine)
+  if(isMulti){ const cc=compute(workSpec()); $('inDist').value=cc?Math.round(cc.baseDist):''; }
+  else $('inDist').value=state.distance?Math.round(state.distance):'';
+  $('inCargo').value=state.cargo?Math.round(state.cargo):'';
+  $('inCanal').value=state.canalCost?Math.round(state.canalCost):'';
+  $('distHint').textContent=isMulti?'· multi-port · auto sum':((lp&&dp)?(state.distAuto!==false?'· auto from route':'· manual'):'');
+  // ballast leg (origin → load)
+  const showB=!!state.originId;
+  $('ballastDistWrap').style.display=showB?'block':'none';
+  $('inBallastDist').value=showB&&state.ballastDistance?Math.round(state.ballastDistance):'';
+  // routing selector — only where Suez/Cape/Panama is a real choice
+  const vias=viasFor(state.loadId,state.dischId);
+  if(!vias.includes(state.via)) state.via='base';
+  if(lp&&dp&&vias.length>1){
+    $('viaWrap').style.display='block';
+    $('viaToggle').innerHTML=vias.map(k=>`<button class="${k===state.via?'on':''}" data-via="${k}">${viaLabel(k,vias)}${VIA_DAYS[k]?` +${f1(VIA_DAYS[k])}d`:''}</button>`).join('');
+    const dev=VIA_DAYS[state.via]?VIA_DAYS[state.via]*(v?v.ladenSpeed:13)*24:0;
+    $('viaNote').innerHTML=state.via==='base'
+      ? `Via <b style="color:var(--ink-dim)">${viaFull('base')}</b> — base laden distance.`
+      : `Via <b style="color:var(--amber)">${viaFull(state.via)}</b> · +${f1(VIA_DAYS[state.via])} days ≈ +${f0(dev)} NM steaming.`;
+  } else $('viaWrap').style.display='none';
+  // market
+  $('inWs').value=state.ws;
+  $('inFlat').value=state.flat;
+  $('inAddComm').value=state.addComm;
+  $('inBrkComm').value=state.brokerComm;
+  $('selBunker').innerHTML=DB.bunkers.map(b=>`<option value="${b.id}" ${b.id===state.bunkerId?'selected':''}>${b.port} ${b.fuel}</option>`).join('');
+  $('inBunker').value=state.bunkerPrice;
+  // cargo warning
+  const w=$('cargoWarn');
+  if(v&&state.cargo>v.dwt){w.textContent=`⚠ Cargo ${f0(state.cargo)} t exceeds ${v.type} ${f0(v.dwt)} dwt — check the pairing.`;w.classList.add('show');}
+  else w.classList.remove('show');
+}
+
+function renderVoyageResult(){
+  const c=compute(workSpec());
+  if(!c){
+    $('rTce').textContent='—';$('rTce').className='big mono';
+    ['rProfit','rProfit2','rDays','rGross','rAddComm','rBrkComm','rNet','rCost','rFuel','rPort','rCanal','rFuelMt'].forEach(id=>{$(id).textContent='—';$(id).className=$(id).className.replace(/\b(pos|neg)\b/g,'');});
+    $('costBar').innerHTML='';$('costLegend').innerHTML='';
+    renderAI('aiVoyage','Voyage read',['Select a load and a discharge port to build a voyage and see its economics.'],null);
+    return;
+  }
+  $('rTce').textContent=usd(c.tce);
+  $('rTce').className='big mono '+(c.tce>=0?'pos':'neg');
+  $('rProfit').textContent=usd(c.profit);$('rProfit').className='mono '+(c.profit>=0?'pos':'neg');
+  $('rDays').textContent=f1(c.totalDays);
+  // freight waterfall
+  $('rGross').textContent=usd(c.grossFreight);
+  $('rAddPct').textContent=f1(c.addComm)+'%';
+  $('rBrkPct').textContent=f1(c.brokerComm)+'%';
+  $('rAddComm').textContent=c.addCommAmt>0?'−'+usd(c.addCommAmt):'—';
+  $('rBrkComm').textContent=c.brokerCommAmt>0?'−'+usd(c.brokerCommAmt):'—';
+  $('rNet').textContent=usd(c.netFreight);
+  // cost grid
+  $('rCost').textContent=usd(c.totalCost);
+  $('rProfit2').textContent=usd(c.profit);$('rProfit2').className='v mono sm '+(c.profit>=0?'pos':'neg');
+  $('rFuel').textContent=usd(c.fuelCost);
+  $('rPort').textContent=usd(c.portCost);
+  $('rCanal').textContent=c.canalCost>0?usd(c.canalCost):'—';
+  $('rFuelMt').textContent=f0(c.totalFuel)+' mt';
+  const segs=[['var(--glow)',c.fuelCost,'Bunkers'],['var(--amber)',c.portCost,'Port'],['#7a8cff',c.canalCost,'Canal']];
+  $('costBar').innerHTML=segs.filter(s=>s[1]>0).map(s=>`<i style="width:${(s[1]/c.totalCost*100)}%;background:${s[0]}"></i>`).join('');
+  $('costLegend').innerHTML=segs.filter(s=>s[1]>0).map(s=>`<span><span class="dot" style="background:${s[0]}"></span>${s[2]} ${(s[1]/c.totalCost*100).toFixed(0)}%</span>`).join('');
+  renderAI('aiVoyage','Voyage read',voyageCommentary(c),()=>aiPrompt('voyage',c));
+}
+
+let wsChart=null;
+let cbChart=null;
+function renderAnalysis(){
+  const combined = state.analyzeId==='combined' && state.board.length>0;
+  const cp=$('combinedPanel'), sp=$('singleAnalysis');
+  if(cp) cp.style.display=combined?'block':'none';
+  if(sp) sp.style.display=combined?'none':'contents';
+  if(combined){ renderCombined(); return; }
+  const spec=analyzeSpec();
+  const c=compute(spec);
+  const vsl=byId(DB.vessels,spec.vesselId);
+  // subject meta line
+  if($('analyzeMeta')){
+    $('analyzeMeta').innerHTML = c
+      ? `${c.lp.name} → ${c.dp.name} · ${vsl?vsl.type:''} · ${f0(c.ladenDist)} NM · WS ${f1(c.ws)}${c.viaKey!=='base'?` · via ${viaLabel(c.viaKey,viasFor(spec.loadId,spec.dischId))}`:''}`
+      : 'No voyage selected — build one on the Voyages tab or pick a preset above.';
+  }
+  if(!c){
+    $('wsTable').innerHTML='';$('cmpList').innerHTML='<div class="sub-label">Nothing to analyse yet.</div>';
+    $('negCard').innerHTML='';lastCmp=[];
+    ['bLadenD','bBallastD','bLadenT','bBallastT','bRatio','bCost','beWs','beCushion','mMargin','mProfitT','mNetT','mCostT','mDayCost','mRevDay'].forEach(id=>$(id).textContent='—');
+    if($('beFill'))$('beFill').style.width='0%'; if($('beThr'))$('beThr').style.left='0%';
+    $('effScore').textContent='—';
+    renderAI('aiAnalysis','Analysis read',['Select a voyage to analyse.'],null);
+    return;
+  }
+  const scn=wsScenarios(spec);
+  const baseTce=c.tce;
+  let html='<thead><tr><th>WS</th><th>Net frt</th><th>Profit</th><th>TCE</th><th>Δ%</th></tr></thead><tbody>';
+  scn.forEach(s=>{
+    const dpct=baseTce!==0?((s.tce-baseTce)/Math.abs(baseTce)*100):0;
+    const cur=Math.abs(s.ws-c.ws)<0.01;
+    html+=`<tr class="${cur?'cur':''}"><td>${f1(s.ws)}</td><td>${compact(s.revenue)}</td><td class="${s.profit>=0?'pos':'neg'}">${compact(s.profit)}</td><td>${usd(s.tce)}</td><td class="${dpct>=0?'pos':'neg'}">${dpct>=0?'+':''}${dpct.toFixed(1)}%</td></tr>`;
+  });
+  html+='</tbody>';$('wsTable').innerHTML=html;
+  drawWsChart(scn);
+  const per1=c.perWsNet;
+  const per5tce=c.totalDays>0?(5*per1)/c.totalDays:0;
+  $('negCard').innerHTML=`
+    <div class="eyebrow" style="color:var(--amber);margin-bottom:8px"><span class="tick" style="background:var(--amber)"></span>Negotiation impact</div>
+    <div class="nl"><span class="t">Every +1 WS point</span><span class="a">${usd(per1)} profit</span></div>
+    <div class="nl"><span class="t">Every +5 WS points</span><span class="a">${usd(per5tce)}/day TCE</span></div>
+    <div class="nl"><span class="t">Full band (${f1(scn[0].ws)}–${f1(scn[scn.length-1].ws)})</span><span class="a">${usd(scn[scn.length-1].profit-scn[0].profit)} swing</span></div>`;
+  renderComparison(spec,c);
+  $('bLadenD').textContent=f0(c.ladenDist)+' NM';
+  $('bBallastD').textContent=c.ballastDist>0?f0(c.ballastDist)+' NM':'0';
+  $('bLadenT').textContent=f1(c.ladenDays)+' d';
+  $('bBallastT').textContent=c.ballastDays>0?f1(c.ballastDays)+' d':'0';
+  $('bRatio').textContent=pct(c.ballastPct);
+  $('bCost').textContent=c.ballastCost>0?usd(c.ballastCost):'—';
+  $('effScore').textContent=c.effScore;
+  const circ=2*Math.PI*40;
+  $('gaugeArc').style.strokeDashoffset=circ*(1-c.effScore/100);
+  $('gaugeArc').style.stroke=c.effScore>=66?'var(--profit)':c.effScore>=40?'var(--glow)':'var(--amber)';
+  // breakeven & margins
+  const pt=v=>(v<0?'-$':'$')+Math.abs(v).toFixed(2);
+  const be=beWS(c), cushion=isFinite(be)?c.ws-be:NaN;
+  $('beWs').textContent=isFinite(be)?f1(be):'n/a';
+  if(isFinite(be)){
+    const cuPct=be>0?cushion/be*100:0;
+    $('beCushion').textContent=(cushion>=0?'+':'')+f1(cushion)+' pts cushion at WS '+f1(c.ws)+' ('+(cushion>=0?'+':'')+cuPct.toFixed(0)+'%)';
+    $('beCushion').className='be-sub '+(cushion>=0?'pos':'neg');
+    const scale=(Math.max(c.ws,be)*1.15)||1;
+    $('beFill').style.width=Math.min(100,c.ws/scale*100)+'%';
+    $('beFill').style.background=cushion>=0?'var(--profit)':'var(--loss)';
+    $('beThr').style.left=Math.min(100,be/scale*100)+'%';
+  } else {
+    $('beCushion').textContent='Costs aren’t covered at any WS on this rate'; $('beCushion').className='be-sub neg';
+    $('beFill').style.width='0%'; $('beThr').style.left='100%';
+  }
+  const margin=c.grossFreight>0?c.profit/c.grossFreight*100:0;
+  $('mMargin').textContent=pct(margin);
+  $('mProfitT').textContent=c.cargo>0?pt(c.profit/c.cargo):'—';
+  $('mNetT').textContent=c.cargo>0?pt(c.netFreight/c.cargo):'—';
+  $('mCostT').textContent=c.cargo>0?pt(c.totalCost/c.cargo):'—';
+  $('mDayCost').textContent=c.totalDays>0?usd(c.totalCost/c.totalDays):'—';
+  $('mRevDay').textContent=c.totalDays>0?usd(c.grossFreight/c.totalDays):'—';
+  renderAI('aiAnalysis','Analysis read',analysisCommentary(c,lastCmp,rankKey),()=>aiPrompt('analysis',c));
+}
+
+function drawWsChart(scn){
+  const ctx=$('wsChart');if(!window.Chart)return;
+  const light=state.theme==='light';
+  const teal=light?'#0A8FA0':'#2DE2E6', tealFill=light?'rgba(10,143,160,.12)':'rgba(45,226,230,.12)';
+  const amber=light?'#BC720A':'#F5A623';
+  const gridC=light?'rgba(20,48,86,.10)':'rgba(120,180,255,.08)', tickC=light?'#74879F':'#56698C';
+  const tipBg=light?'#FFFFFF':'#122038', tipTitle=light?'#0C1A2E':'#E8F0FF', tipBody=light?'#43576F':'#90A4C6';
+  const legendC=light?'#43576F':'#90A4C6', pointBorder=light?'#FFFFFF':'#04121a';
+  const labels=scn.map(s=>f1(s.ws));
+  const data={labels,datasets:[
+    {label:'TCE $/day',data:scn.map(s=>Math.round(s.tce)),borderColor:teal,backgroundColor:tealFill,
+     yAxisID:'y',tension:.3,fill:true,pointRadius:4,pointBackgroundColor:teal,pointBorderColor:pointBorder,borderWidth:2},
+    {label:'Profit $',data:scn.map(s=>Math.round(s.profit)),borderColor:amber,backgroundColor:'transparent',
+     yAxisID:'y1',tension:.3,pointRadius:3,pointBackgroundColor:amber,pointBorderColor:pointBorder,borderWidth:2,borderDash:[5,4]}]};
+  const opt={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:legendC,font:{family:'JetBrains Mono',size:10},boxWidth:10,boxHeight:10,padding:12}},
+      tooltip:{backgroundColor:tipBg,borderColor:teal,borderWidth:1,titleColor:tipTitle,bodyColor:tipBody,
+        titleFont:{family:'JetBrains Mono'},bodyFont:{family:'JetBrains Mono'},padding:10,
+        callbacks:{title:i=>'WS '+i[0].label,label:c=>c.dataset.label+': '+ (c.datasetIndex===0?usd(c.raw)+'/day':compact(c.raw))}}},
+    scales:{
+      x:{grid:{color:gridC},ticks:{color:tickC,font:{family:'JetBrains Mono',size:10}}},
+      y:{position:'left',grid:{color:gridC},ticks:{color:teal,font:{family:'JetBrains Mono',size:9},callback:v=>compact(v)}},
+      y1:{position:'right',grid:{drawOnChartArea:false},ticks:{color:amber,font:{family:'JetBrains Mono',size:9},callback:v=>compact(v)}}}};
+  if(wsChart){wsChart.data=data;wsChart.options=opt;wsChart.update('none');}
+  else wsChart=new Chart(ctx,{type:'line',data,options:opt});
+}
+/* combined analysis across all staged voyages, priced on the map's program vessel */
+function renderCombined(){
+  const board=state.board, vsl=byId(DB.vessels,state.vesselId);
+  if($('cbVessel')) $('cbVessel').textContent=vsl?vsl.type:'—';
+  if($('analyzeMeta')) $('analyzeMeta').innerHTML=board.length
+    ? `Combined program · ${board.length} voyage${board.length>1?'s':''} priced on ${vsl?vsl.type:'—'} (vessel set on the Map tab)`
+    : 'No voyages staged yet.';
+  const rows=board.map((b,i)=>({i,b,c:progCompute(b),col:stackColor(i)}));
+  let prof=0,days=0,laden=0,ballast=0;
+  rows.forEach(r=>{ if(r.c){prof+=r.c.profit;days+=r.c.totalDays;laden+=r.c.ladenDist;ballast+=(r.c.totalBallast||r.c.ballastDist||0);} });
+  const tce=days>0?prof/days:0;
+  if($('cbTotals')) $('cbTotals').innerHTML=board.length?`
+    <div class="cb-t"><div class="k">Blended TCE</div><div class="v ${tce>=0?'pos':'neg'}">${usd(tce)}<small>/day</small></div></div>
+    <div class="cb-t"><div class="k">Total profit</div><div class="v ${prof>=0?'pos':'neg'}">${compact(prof)}</div></div>
+    <div class="cb-t"><div class="k">Duration</div><div class="v">${f1(days)}<small>days</small></div></div>
+    <div class="cb-t"><div class="k">Laden</div><div class="v">${f0(laden)}<small>NM</small></div></div>
+    <div class="cb-t"><div class="k">Ballast</div><div class="v">${f0(ballast)}<small>NM</small></div></div>
+    <div class="cb-t"><div class="k">Voyages</div><div class="v">${board.length}</div></div>`
+    :'<div class="sub-label">Stage voyages on the Map tab (＋ Voy / ✓ End voy), then return here to see them combined.</div>';
+  if($('cbTable')){
+    if(!board.length){ $('cbTable').innerHTML=''; }
+    else { let h='<thead><tr><th></th><th>Voyage</th><th>NM</th><th>Days</th><th>Profit</th><th>TCE</th></tr></thead><tbody>';
+      rows.forEach(r=>{ h+=`<tr><td><span class="cb-sw" style="background:${r.col}"></span></td><td class="cb-rt">${r.b.label||specName(r.b)}</td><td>${r.c?f0(r.c.ladenDist):'—'}</td><td>${r.c?f1(r.c.totalDays):'—'}</td><td class="${r.c&&r.c.profit>=0?'pos':'neg'}">${r.c?compact(r.c.profit):'—'}</td><td>${r.c?usd(r.c.tce):'—'}</td></tr>`; });
+      h+=`<tr class="cb-sum"><td></td><td>Combined</td><td>${f0(laden)}</td><td>${f1(days)}</td><td class="${prof>=0?'pos':'neg'}">${compact(prof)}</td><td>${usd(tce)}</td></tr></tbody>`;
+      $('cbTable').innerHTML=h; }
+  }
+  drawCombinedChart(rows);
+}
+function drawCombinedChart(rows){
+  const ctx=$('cbChart'); if(!ctx||!window.Chart) return;
+  const light=state.theme==='light';
+  const gridC=light?'rgba(20,48,86,.10)':'rgba(120,180,255,.08)', tickC=light?'#74879F':'#56698C';
+  const tipBg=light?'#FFFFFF':'#122038', tipTitle=light?'#0C1A2E':'#E8F0FF', tipBody=light?'#43576F':'#90A4C6';
+  const labels=rows.map(r=>'V'+(r.i+1));
+  const data={labels,datasets:[{label:'TCE $/day',data:rows.map(r=>r.c?Math.round(r.c.tce):0),
+    backgroundColor:rows.map(r=>r.col),borderColor:rows.map(r=>r.col),borderWidth:1,borderRadius:4}]};
+  const opt={responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:tipBg,borderColor:tickC,borderWidth:1,titleColor:tipTitle,bodyColor:tipBody,
+        titleFont:{family:'JetBrains Mono'},bodyFont:{family:'JetBrains Mono'},padding:10,
+        callbacks:{title:i=>{const r=rows[i[0].dataIndex];return r.b.label||('Voyage '+(r.i+1));},label:c=>'TCE '+usd(c.raw)+'/day'}}},
+    scales:{x:{grid:{display:false},ticks:{color:tickC,font:{family:'JetBrains Mono',size:10}}},
+      y:{grid:{color:gridC},ticks:{color:tickC,font:{family:'JetBrains Mono',size:9},callback:v=>compact(v)}}}};
+  if(cbChart){cbChart.data=data;cbChart.options=opt;cbChart.update('none');}
+  else cbChart=new Chart(ctx,{type:'bar',data,options:opt});
+}
+
+let lastCmp=[], rankKey='tce';
+const beWS=c=>c&&c.perWsNet>0?c.totalCost/c.perWsNet:Infinity;   // breakeven Worldscale: the rate where profit = 0
+function renderComparison(spec,c){
+  if(!c){ $('cmpList').innerHTML='<div class="sub-label">Nothing to compare.</div>'; lastCmp=[]; return; }
+  const loadId=spec.loadId;
+  const cand=[c];                                   // the subject itself
+  DB.routes.filter(r=>r.load===loadId).forEach(r=>{const cc=compute(presetSpec(r)); if(cc) cand.push(cc);});
+  state.board.filter(b=>b.loadId===loadId).forEach(b=>{const cc=compute(b); if(cc) cand.push(cc);});
+  const seen={}, alts=[];
+  cand.forEach(x=>{if(x&&!seen[x.id]){seen[x.id]=1;alts.push(x);}});   // dedupe, subject wins
+  const sorters={tce:(a,b)=>b.tce-a.tce,profit:(a,b)=>b.profit-a.profit,ballast:(a,b)=>b.effScore-a.effScore,breakeven:(a,b)=>beWS(a)-beWS(b)};
+  alts.sort(sorters[rankKey]||sorters.tce);
+  lastCmp=alts;
+  const maxTce=Math.max(...alts.map(a=>a.tce),1);
+  if(alts.length<=1){
+    $('cmpList').innerHTML=`<div class="sub-label">Only one voyage from ${c.lp.name} to compare. Stack more voyages from the same load port on the board, or add presets that load there.</div>`+
+      cmpRow(alts[0],0,maxTce,spec.id);
+    return;
+  }
+  $('cmpList').innerHTML=alts.map((a,i)=>cmpRow(a,i,maxTce,spec.id)).join('');
+}
+function cmpRow(a,i,maxTce,subjId){
+  if(!a)return '';
+  const isBest=i===0, isCur=a.id===subjId;
+  const sw=Math.max(2,(a.tce/maxTce*100))||2;
+  const kind=(a.id&&a.id.indexOf('preset:')===0)?'preset':((a.id&&a.id.indexOf('brd_')===0)?'board':'');
+  const tag=isCur?' · subject':(kind==='preset'?' · preset':(kind==='board'?' · board':''));
+  return `<div class="cmp ${isBest?'best':''}">
+    <div class="rank">${i+1}</div>
+    <div class="body"><div class="nm">${a.dp.name}${tag}</div>
+      <div class="sub">${f0(a.ladenDist)} NM · ${f1(a.totalDays)}d · WS ${f1(a.ws)} → BE ${isFinite(beWS(a))?f1(beWS(a)):'n/a'} · ${a.v.type}</div></div>
+    <div class="figs"><div class="tce ${a.tce>=0?'pos':'neg'}">${usd(a.tce)}</div><div class="pf">${compact(a.profit)} profit</div></div>
+    <div class="spark" style="width:${sw}%"></div></div>`;
+}
+
+/* ---------- AI panel render ---------- */
+function renderAI(elId,title,lines,onEnhance){
+  const el=$(elId);
+  el.dataset.title=title;
+  el.innerHTML=`
+    <div class="ai-head"><div class="l"><span class="ai-orb"></span>${title}</div>
+      <button class="btn-ai" data-enhance="${elId}">${state.ai.enabled?'⟲ Ask Ollama':'⟲ Regenerate'}</button></div>
+    <div class="ai-body" id="${elId}-body">${lines.map(l=>`<p>${l}</p>`).join('')}</div>
+    <div class="ai-src">${state.ai.enabled?'Source: deterministic · tap to enhance with '+state.ai.model:'Source: deterministic engine'}</div>`;
+  el._enhance=onEnhance;
+}
+
+/* ---------- Ollama integration ---------- */
+function aiPrompt(kind,c){
+  let facts;
+  if(kind==='voyage'){
+    facts=`Vessel ${c.v.type}. Voyage ${c.lp.name} → ${c.dp.name}. Cargo ${f0(c.cargo)} t. WS ${f1(c.ws)}, flat $${c.flat}/t. `+
+      `Gross freight ${usd(c.grossFreight)}, less ${f1(c.addComm+c.brokerComm)}% commission = net ${usd(c.netFreight)}. `+
+      `Bunkers ${usd(c.fuelCost)} (${c.totalCost?(c.fuelCost/c.totalCost*100).toFixed(0):0}% of cost), `+
+      `port ${usd(c.portCost)}, canal ${usd(c.canalCost)}. Total cost ${usd(c.totalCost)}. `+
+      `Profit ${usd(c.profit)} over ${f1(c.totalDays)} days. TCE ${usd(c.tce)}/day. Ballast ${pct(c.ballastPct)}, eff ${c.effScore}/100.`;
+  } else {
+    const per1=c.perWsNet;
+    facts=`Voyage ${c.lp.name} → ${c.dp.name}, TCE ${usd(c.tce)}/day, profit ${usd(c.profit)}. Each +1 WS = ${usd(per1)} net. `+
+      `Alternatives from ${c.lp.name}: `+lastCmp.map(a=>`${a.dp.name} TCE ${usd(a.tce)}/day`).join(', ')+`. Ballast eff ${c.effScore}/100.`;
+  }
+  return `You are a tanker shipbroker's analyst. In 3 short sentences, give sharp commercial commentary on these PRE-CALCULATED figures. Do NOT recalculate or invent numbers — only interpret. Be specific and punchy.\n\nFIGURES: ${facts}`;
+}
+async function enhanceAI(elId){
+  const el=$(elId);if(!el._enhance)return;
+  if(!state.ai.enabled){ // just regenerate deterministic
+    toast('AI off — showing deterministic read');refreshActive();return;
+  }
+  const btn=el.querySelector('.btn-ai');
+  btn.innerHTML='<span class="spin"></span> thinking';btn.disabled=true;
+  const prompt=el._enhance();
+  try{
+    const res=await fetch(state.ai.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:state.ai.model,prompt,stream:false})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const txt=(data.response||'').trim();
+    if(!txt)throw new Error('empty');
+    const paras=(txt.replace(/\r/g,'').split(/\n+/).join(' ').match(/[^.!?]+[.!?]+|\S[^.!?]*$/g)||[txt]).map(s=>s.trim()).filter(s=>s.length>4).slice(0,4);
+    $(elId+'-body').innerHTML=paras.map(p=>`<p>${p.trim()}</p>`).join('');
+    el.querySelector('.ai-src').textContent='Source: '+state.ai.model+' (local) · figures from engine';
+    btn.innerHTML='⟲ Ask Ollama';btn.disabled=false;
+  }catch(err){
+    btn.innerHTML='⟲ Ask Ollama';btn.disabled=false;
+    el.querySelector('.ai-src').textContent='Ollama unreachable ('+err.message+') · deterministic read shown';
+    toast('Ollama unreachable — check endpoint & OLLAMA_ORIGINS');
+  }
+}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+let map=null, layers={ports:[],routes:[]}, mapReady=false, tileLayer=null;
+const LADEN='#3FE08D', BALLAST='#FF5C7A';   // laden = green, ballast = red
+
+/* ---------- theme (light / dark) ---------- */
+function tileUrl(){ return 'https://{s}.basemaps.cartocdn.com/'+((state.theme==='light')?'light_all':'dark_all')+'/{z}/{x}/{y}{r}.png'; }
+function applyTheme(t){
+  state.theme=(t==='light')?'light':'dark';
+  document.documentElement.setAttribute('data-theme',state.theme);
+  const mc=document.querySelector('meta[name="theme-color"]'); if(mc)mc.setAttribute('content',state.theme==='light'?'#EAEFF6':'#060B14');
+  const tb=$('btnTheme'); if(tb)tb.textContent=state.theme==='light'?'☾':'☀';
+  document.querySelectorAll('#themeToggle button').forEach(b=>b.classList.toggle('on',b.dataset.theme===state.theme));
+  if(tileLayer){try{tileLayer.setUrl(tileUrl());}catch(e){}}
+  if(wsChart||cbChart){try{renderAnalysis();}catch(e){}}
+  try{localStorage.setItem('av-theme',state.theme);}catch(e){}
+}
+function toggleTheme(){ applyTheme(state.theme==='light'?'dark':'light'); }
+
+/* ---------- map (robust on mobile) ---------- */
+function whenLeaflet(cb,n){ n=n||0; if(window.L){cb();return;} if(n>60)return; setTimeout(()=>whenLeaflet(cb,n+1),100); }
+function kickMap(){ if(!map)return; [0,150,350,650,1000].forEach(d=>setTimeout(()=>{ if(map){map.invalidateSize();if(mapReady&&activeTab==='map'){drawPorts();drawRoute();}} },d)); }
+function initMap(){
+  if(mapReady||map)return;
+  if(!window.L){ whenLeaflet(initMap); return; }     // CDN may load late on mobile
+  const el=$('map'); if(!el)return;
+  map=L.map(el,{zoomControl:false,attributionControl:false,minZoom:2,maxZoom:9,worldCopyJump:true,
+    tap:true,tapTolerance:18,bounceAtZoomLimits:false}).setView([24,40],3);
+  tileLayer=L.tileLayer(tileUrl(),{maxZoom:19,subdomains:'abcd',crossOrigin:true}).addTo(map);
+  drawPorts();drawRoute();mapReady=true;
+  kickMap();
+  let rz; window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(map)map.invalidateSize();},150);});
+  window.addEventListener('orientationchange',()=>{setTimeout(()=>{if(map){map.invalidateSize();if(activeTab==='map')drawRoute();}},250);});
+}
+function drawPorts(){
+  if(!map)return;
+  layers.ports.forEach(m=>map.removeLayer(m));layers.ports=[];
+  const wLoads=new Set(loadList(workSpec())), wDischs=new Set(dischList(workSpec())), wo=state.originId;
+  const boardPts={}; state.board.forEach(b=>{loadList(b).forEach(id=>boardPts[id]=1);dischList(b).forEach(id=>boardPts[id]=1);if(b.originId)boardPts[b.originId]=1;});
+  (state.fixings||[]).filter(f=>f.showOnMap).forEach(f=>{loadList(f.spec).forEach(id=>boardPts[id]=1);dischList(f.spec).forEach(id=>boardPts[id]=1);if(f.spec.originId)boardPts[f.spec.originId]=1;});
+  const roleName={L:'Load hub',D:'Discharge',H:'Hub'};
+  DB.ports.forEach(p=>{
+    const role=p.role||'D';
+    let cls='port-dot role-'+role;
+    if(wLoads.has(p.id))cls+=' sel-load';
+    else if(wDischs.has(p.id))cls+=' sel-disch';
+    else if(p.id===wo)cls+=' sel-origin';
+    else if(boardPts[p.id])cls+=' sel-board';
+    const sz=role==='L'?16:role==='H'?13:11;
+    const icon=L.divIcon({className:'',html:`<div class="${cls}"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+    const m=L.marker([p.lat,p.lon],{icon}).addTo(map);
+    m.bindPopup(`<div class="pop-role ${role}">${roleName[role]}</div>
+      <div class="pop-nm">${p.name}</div><div class="pop-rg">${p.region}${p.country?' · '+p.country:''}</div>
+      <div class="pop-btns"><button class="load" data-setload="${p.id}">Load</button><button class="disch" data-setdisch="${p.id}">Disch</button><button class="orig" data-setorigin="${p.id}">Origin</button></div>
+      <div class="pop-btns2"><button data-addload="${p.id}">+ load call</button><button data-adddisch="${p.id}">+ disch call</button></div>`);
+    layers.ports.push(m);
+  });
+}
+/* ---------- animated fixing fleet: ships sail their laden route, pause on hover/tap ---------- */
+let fleet=[]; let fleetRAF=null; let fleetLast=0;
+function stopFleet(){ if(fleetRAF){cancelAnimationFrame(fleetRAF);fleetRAF=null;} fleet=[]; fleetLast=0; }
+function fixingLadenPoints(spec){
+  const ld=loadList(spec), dd=dischList(spec), seq=[...ld,...dd];
+  if(seq.length<2) return [];
+  const via=(viasFor(ld[0],dd[dd.length-1]).includes(spec.via)?spec.via:'base')||'base';
+  let pts=[];
+  for(let i=0;i<seq.length-1;i++){ const a=byId(DB.ports,seq[i]),b=byId(DB.ports,seq[i+1]); if(a&&b) pts=pts.concat(unwrap(pathThrough(seaRoute(a,b,via)))); }
+  return pts;
+}
+/* interpolate ship position + heading at fraction t (0..1) of the route */
+function shipAt(s,t){
+  const d=t*s.total; let i=1;
+  while(i<s.cum.length-1 && s.cum[i]<d) i++;
+  const a=s.pts[i-1], b=s.pts[i]||a;
+  const seg=(s.cum[i]-s.cum[i-1])||1, f=Math.max(0,Math.min(1,(d-s.cum[i-1])/seg));
+  const lat=a[0]+(b[0]-a[0])*f, lon=a[1]+(b[1]-a[1])*f;
+  const deg=Math.atan2(-((b[0]-a[0])*s.dir),((b[1]-a[1])*s.dir))*180/Math.PI;   // bow faces travel direction
+  return {lat,lon,deg};
+}
+function drawFleet(){
+  stopFleet();
+  let allPts=[];
+  (state.fixings||[]).filter(f=>f.showOnMap).forEach(f=>{
+    const pts=fixingLadenPoints(f.spec); if(pts.length<2) return;
+    allPts=allPts.concat(pts);
+    const cum=[0]; for(let i=1;i<pts.length;i++){ cum[i]=cum[i-1]+haversineNM({lat:pts[i-1][0],lon:pts[i-1][1]},{lat:pts[i][0],lon:pts[i][1]}); }
+    const total=cum[cum.length-1]||1;
+    const aura=L.polyline(pts,{color:'#7FB0FF',weight:12,opacity:.07,lineCap:'round',interactive:true,className:'fix-hit'}).addTo(map); // wide hover zone
+    const line=L.polyline(pts,{color:'#7FB0FF',weight:2.6,opacity:.6,lineCap:'round',interactive:false}).addTo(map);
+    layers.routes.push(aura,line);
+    const ship={pts,cum,total,t:Math.random()*0.7+0.15,dir:Math.random()<.5?1:-1,paused:false,marker:null,el:null};
+    const s0=shipAt(ship,ship.t);
+    const mk=L.marker([s0.lat,s0.lon],{icon:shipIcon(s0.deg),zIndexOffset:1300,interactive:true,keyboard:false}).addTo(map);
+    layers.routes.push(mk); ship.marker=mk;
+    const c=compute(f.spec);
+    mk.bindTooltip(`<b>${f.vesselName}</b>${f.vesselClass?' · '+f.vesselClass:''}<span class="tt-rt">${specName(f.spec)}</span>${c?`<span class="tt-m">${f.spec.cargo?f0(f.spec.cargo)+' t · ':''}${f0(c.ladenDist)} NM · ${f1(c.totalDays)}d · TCE ${usd(c.tce)}</span>`:''}${f.note?`<span class="tt-n">“${f.note}”</span>`:''}`,{direction:'top',offset:[0,-9],className:'ship-tip'});
+    mk.bindPopup(`<div class="pop-role D">Fixed vessel</div><div class="pop-nm">${f.vesselName}</div>
+      <div class="pop-rg">${f.vesselClass||''}${f.cpDate?' · CP '+f.cpDate:''}</div>
+      <div class="pop-fix">${specName(f.spec)}</div>
+      <div class="pop-fix2">${c?`${f.spec.cargo?f0(f.spec.cargo)+' t · ':''}${f0(c.ladenDist)} NM · ${f1(c.totalDays)}d · TCE ${usd(c.tce)}`:''}</div>
+      ${f.note?`<div class="pop-note">“${f.note}”</div>`:''}`);
+    const pause=()=>{ ship.paused=true; mk.openTooltip(); };
+    const resume=()=>{ if(!mk.isPopupOpen()) ship.paused=false; };
+    const hold=()=>{ ship.paused=true; mk.openPopup(); };
+    mk.on('mouseover',pause); mk.on('mouseout',resume); mk.on('click',hold);
+    aura.on('mouseover',pause); aura.on('mouseout',resume); aura.on('click',hold);
+    mk.on('popupclose',()=>{ ship.paused=false; });
+    fleet.push(ship);
+  });
+  if(fleet.length){ fleetRAF=requestAnimationFrame(tickFleet); }
+  return allPts;
+}
+function tickFleet(now){
+  if(!fleet.length){ fleetRAF=null; return; }
+  if(activeTab && activeTab!=='map'){ fleetRAF=requestAnimationFrame(tickFleet); return; }   // idle when off-map
+  if(!fleetLast) fleetLast=now;
+  let dt=(now-fleetLast)/1000; fleetLast=now; if(dt>0.1) dt=0.1;
+  const SPEED=1/15;                                                                            // ~15s per full traversal
+  fleet.forEach(s=>{
+    if(!s.paused){ s.t+=s.dir*SPEED*dt;
+      if(s.t>=1){ s.t=1; s.dir=-1; } else if(s.t<=0){ s.t=0; s.dir=1; } }
+    const p=shipAt(s,s.t);
+    if(s.marker){ s.marker.setLatLng([p.lat,p.lon]);
+      if(!s.el && s.marker._icon) s.el=s.marker._icon.querySelector('.ship-mk');
+      if(s.el) s.el.style.transform='rotate('+p.deg+'deg)'; }
+  });
+  fleetRAF=requestAnimationFrame(tickFleet);
+}
+function shipIcon(deg){
+  const html=`<div class="ship-mk" style="transform:rotate(${deg}deg)"><svg viewBox="0 0 38 20" width="32" height="17">
+    <path d="M3 9 H28 L34 13 L28 17 H3 Z" fill="#16324f" stroke="#bfdcff" stroke-width="1.3" stroke-linejoin="round"/>
+    <rect x="5" y="4" width="8" height="5.5" rx="0.8" fill="#bfdcff"/>
+    <rect x="7.6" y="1.6" width="2.6" height="3" rx="0.5" fill="#7FB0FF"/></svg></div>`;
+  return L.divIcon({className:'',html,iconSize:[32,17],iconAnchor:[16,13]});
+}
+function clearRoutes(){ if(typeof stopFleet==='function')stopFleet(); layers.routes.forEach(l=>map.removeLayer(l)); layers.routes=[]; }
+function drawOne(spec,opts){
+  opts=opts||{};
+  const ld=loadList(spec), dd=dischList(spec);
+  if(!ld.length||!dd.length) return [];
+  const seq=[...ld,...dd];                                  // ordered laden call sequence
+  const ladenCol=opts.color||LADEN, ballCol=opts.color||BALLAST;
+  const via=(viasFor(ld[0],dd[dd.length-1]).includes(spec.via)?spec.via:'base')||'base';
+  let pts=[];
+  // laden legs between consecutive calls (load→load, load→disch, disch→disch)
+  for(let i=0;i<seq.length-1;i++){
+    const a=byId(DB.ports,seq[i]), b=byId(DB.ports,seq[i+1]); if(!a||!b)continue;
+    const leg=unwrap(pathThrough(seaRoute(a,b,via))); pts=pts.concat(leg);
+    if(!opts.dim && !opts.color) layers.routes.push(L.polyline(leg,{color:ladenCol,weight:7,opacity:.12,lineCap:'round'}).addTo(map)); // glow (working only)
+    layers.routes.push(L.polyline(leg,{color:ladenCol,weight:opts.dim?1.9:2.6,opacity:opts.dim?.6:.95,lineCap:'round'}).addTo(map));
+  }
+  // ballast positioning: origin → first load
+  const op=spec.originId?byId(DB.ports,spec.originId):null, first=byId(DB.ports,ld[0]);
+  if(op&&first){
+    const bal=unwrap(pathThrough(seaRoute(op,first,'base'))); pts=pts.concat(bal);
+    layers.routes.push(L.polyline(bal,{color:ballCol,weight:opts.dim?1.6:2.2,opacity:opts.dim?.55:.85,dashArray:'8 7',lineCap:'round'}).addTo(map));
+  }
+  // round trip: last discharge → first load (ballast back)
+  if(spec.roundTrip){
+    const lastD=byId(DB.ports,dd[dd.length-1]);
+    if(first&&lastD){ const rt=unwrap(pathThrough(seaRoute(lastD,first,'base'))); pts=pts.concat(rt);
+      layers.routes.push(L.polyline(rt,{color:ballCol,weight:opts.dim?1.5:2.0,opacity:opts.dim?.5:.72,dashArray:'3 6',lineCap:'round'}).addTo(map)); }
+  }
+  return pts;
+}
+function drawRoute(){
+  if(!map)return;
+  clearRoutes();
+  let all=[];
+  state.board.forEach((b,i)=>{ all=all.concat(drawOne(b,{dim:true,color:stackColor(i)})); });                              // stack, colour-coded
+  all=all.concat(drawOne(workSpec(),{}));                                                                                  // working voyage, bright
+  all=all.concat(drawFleet());                                                                                            // saved fixings: live ships on their routes
+  if(all.length){ try{map.fitBounds(L.latLngBounds(all).pad(0.18),{animate:false});}catch(e){} }
+}
+function renderMapHud(){
+  const spec=workSpec(); const c=compute(spec);
+  if(!c){
+    ['hudLoad','hudDisch','hudVessel'].forEach(id=>{const e=$(id);if(e)e.textContent='—';});
+    const hv=$('hudVia');if(hv)hv.textContent='';
+    if($('hudDist'))$('hudDist').innerHTML='—';
+    if($('hudDays'))$('hudDays').innerHTML='—';
+    ['hudTce','hudProfit'].forEach(id=>{const e=$(id);if(e){e.textContent='—';e.className='v mono';}});
+    return;
+  }
+  const ld=loadList(spec), dd=dischList(spec);
+  $('hudLoad').textContent=c.lp.name+(ld.length>1?` +${ld.length-1}`:'');
+  $('hudDisch').textContent=c.dp.name+(dd.length>1?` +${dd.length-1}`:'');
+  $('hudVessel').textContent=c.v.type+(c.roundTrip?' · round trip':'');
+  $('hudVia').textContent=c.viaKey!=='base'?`· via ${viaLabel(c.viaKey,viasFor(ld[0],dd[dd.length-1]))} +${f1(c.deviationDays)}d`:'';
+  $('hudDist').innerHTML=f0(c.ladenDist)+' <small>NM</small>';
+  $('hudDays').innerHTML=f1(c.totalDays)+' <small>d</small>';
+  $('hudTce').textContent=compact(c.tce);$('hudTce').className='v mono '+(c.tce>=0?'pos':'neg');
+  $('hudProfit').textContent=compact(c.profit);$('hudProfit').className='v mono '+(c.profit>=0?'pos':'neg');
+}
+
+/* set load/disch/origin directly from a map popup */
+function setEndpoint(type,portId){
+  if(type==='load')setLoad(portId);
+  else if(type==='disch')setDisch(portId);
+  else if(type==='origin')setOrigin(portId);
+  if(map)map.closePopup();
+  const p=byId(DB.ports,portId);
+  toast((type==='load'?'Load → ':type==='disch'?'Discharge → ':'Origin → ')+(p?p.name:''));
+}
+
+/* ============================================================
+   SETTINGS: DB editor
+   ============================================================ */
+let dbTab='vessels';
+const DB_FIELDS={
+  vessels:[['type','txt','Type'],['dwt','n','DWT'],['ladenSpeed','n','L spd'],['ballastSpeed','n','B spd'],['ladenCons','n','L cons'],['ballastCons','n','B cons']],
+  ports:[['name','txt','Port'],['region','txt','Region'],['lat','n','Lat'],['lon','n','Lon'],['cost','n','Cost'],['days','n','Days']],
+  routes:[['name','txt','Route'],['distance','n','NM'],['cargo','n','Cargo'],['canalCost','n','Canal $'],['__flat','n','Flat $/t']],
+  bunkers:[['port','txt','Hub'],['fuel','txt','Fuel'],['price','n','$/mt']],
+};
+function renderDB(){
+  const fields=DB_FIELDS[dbTab];
+  let h='<table class="db-tbl"><thead><tr>'+fields.map(f=>`<th>${f[2]}</th>`).join('')+'<th></th></tr></thead><tbody>';
+  DB[dbTab].forEach(row=>{
+    h+='<tr>'+fields.map(f=>{
+      const isTxt=f[1]==='txt';
+      let val;
+      if(f[0]==='__flat'){val=DB.flats[row.id]!=null?DB.flats[row.id]:'';}
+      else val=row[f[0]];
+      const cls=isTxt?'txt':'';
+      const step=f[0]==='__flat'?'0.05':(isTxt?'':'any');
+      return `<td><input class="${cls}" data-row="${row.id}" data-field="${f[0]}" data-type="${f[1]}" ${isTxt?'':'type="number" inputmode="decimal" step="'+step+'"'} value="${val}"></td>`;
+    }).join('')+`<td><button class="del" data-del="${row.id}">×</button></td>`+'</tr>';
+  });
+  h+='</tbody></table>';
+  $('dbArea').innerHTML=h;
+  renderAddForm();
+}
+function renderAddForm(){
+  let h='<div class="add-form">';
+  if(dbTab==='vessels')h+='<input class="full" id="af1" placeholder="Type e.g. MR2"><input id="af2" type="number" placeholder="DWT"><input id="af3" type="number" placeholder="Laden spd"><input id="af4" type="number" placeholder="Ballast spd"><input id="af5" type="number" placeholder="Laden cons"><input id="af6" type="number" placeholder="Ballast cons">';
+  if(dbTab==='ports')h+='<input id="af1" placeholder="Port name"><input id="af2" placeholder="Region"><input id="af3" type="number" placeholder="Lat"><input id="af4" type="number" placeholder="Lon"><input id="af5" type="number" placeholder="Port cost $"><input id="af6" type="number" placeholder="Port days">';
+  if(dbTab==='routes'){
+    const opt=DB.ports.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    h+=`<input class="full" id="af1" placeholder="Route name"><select id="af2">${opt}</select><select id="af3">${opt}</select><input id="af4" type="number" placeholder="Distance NM"><input id="af5" type="number" placeholder="Cargo t"><input id="af6" type="number" placeholder="Flat $/t WS100">`;
+  }
+  if(dbTab==='bunkers')h+='<input id="af1" placeholder="Hub"><input id="af2" placeholder="Fuel" value="VLSFO"><input id="af3" type="number" placeholder="$/mt">';
+  h+=`<button class="btn primary full" id="btnAdd">+ Add ${dbTab.slice(0,-1)}</button></div>`;
+  $('addArea').innerHTML=h;
+}
+function addRow(){
+  const id=dbTab.slice(0,3)+'_'+Date.now().toString(36);
+  if(dbTab==='vessels'){DB.vessels.push({id,type:$('af1').value||'New',dwt:+$('af2').value||0,ladenSpeed:+$('af3').value||13,ballastSpeed:+$('af4').value||13.5,ladenCons:+$('af5').value||50,ballastCons:+$('af6').value||45});}
+  if(dbTab==='ports'){DB.ports.push({id,name:$('af1').value||'New',region:$('af2').value||'',country:'',lat:+$('af3').value||0,lon:+$('af4').value||0,cost:+$('af5').value||50000,days:+$('af6').value||1});}
+  if(dbTab==='routes'){const load=$('af2').value,disch=$('af3').value,lp=byId(DB.ports,load),dp=byId(DB.ports,disch);
+    DB.routes.push({id,name:$('af1').value||(lp.name+'→'+dp.name),load,disch,distance:+$('af4').value||0,cargo:+$('af5').value||0,canal:false,canalCost:0,vessel:state.vesselId,wp:[]});
+    DB.flats[id]=+$('af6').value||0;}
+  if(dbTab==='bunkers'){DB.bunkers.push({id,port:$('af1').value||'New',fuel:$('af2').value||'VLSFO',price:+$('af3').value||500});}
+  renderDB();refreshAll();toast('Added');
+}
+function delRow(id){
+  if(dbTab==='vessels'&&DB.vessels.length<=1)return toast('Keep at least one vessel');
+  if(dbTab==='bunkers'&&DB.bunkers.length<=1)return toast('Keep at least one bunker hub');
+  DB[dbTab]=DB[dbTab].filter(x=>x.id!==id);
+  if(dbTab==='routes'){
+    delete DB.flats[id];
+    if(state.presetId===id)state.presetId=null;
+    if(state.analyzeId==='preset:'+id)state.analyzeId='work';
+  }
+  if(dbTab==='vessels'&&state.vesselId===id)state.vesselId=DB.vessels[0].id;
+  if(dbTab==='bunkers'&&state.bunkerId===id){state.bunkerId=DB.bunkers[0].id;state.bunkerPrice=DB.bunkers[0].price;}
+  if(dbTab==='ports'){
+    ['loadId','dischId','originId'].forEach(k=>{if(state[k]===id)state[k]=null;});
+    state.board=state.board.filter(b=>b.loadId!==id&&b.dischId!==id&&b.originId!==id);
+    if(state.analyzeId!=='work'&&state.analyzeId.indexOf('preset:')!==0&&!state.board.find(b=>b.id===state.analyzeId))state.analyzeId='work';
+    recompBallast();
+    if(state.distAuto!==false&&state.loadId&&state.dischId)state.distance=estDistance(state.loadId,state.dischId,'base');
+  }
+  renderDB();refreshAll();
+}
+function editField(id,field,type,raw){
+  const val=type==='txt'?raw:(parseFloat(raw)||0);
+  if(field==='__flat'){DB.flats[id]=val;}
+  else{const row=byId(DB[dbTab],id);if(row)row[field]=val;}
+  // keep live state synced
+  if(dbTab==='bunkers'&&id===state.bunkerId&&field==='price')state.bunkerPrice=val;
+  if(dbTab==='routes'&&id===state.presetId&&field==='__flat')state.flat=val;
+  // moving a port's coordinates changes any auto-derived distances
+  if(dbTab==='ports'&&(field==='lat'||field==='lon')){
+    recompBallast();
+    if(state.distAuto!==false&&state.loadId&&state.dischId)state.distance=estDistance(state.loadId,state.dischId,'base');
+  }
+  refreshAllExceptDB();
+}
+
+/* export / import */
+function exportDB(){
+  const blob=new Blob([JSON.stringify({DB,state},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='anchor-voyage-db.json';a.click();toast('Exported anchor-voyage-db.json');
+}
+function importDB(file){
+  const rd=new FileReader();
+  rd.onload=()=>{try{const j=JSON.parse(rd.result);
+    if(j.DB){Object.keys(j.DB).forEach(k=>DB[k]=j.DB[k]);}
+    if(j.state){Object.assign(state,j.state);}
+    syncSettingsUI();renderDB();refreshAll();toast('Imported DB');
+  }catch(e){toast('Invalid JSON file');}};
+  rd.readAsText(file);
+}
+
+/* ============================================================
+   REFRESH ORCHESTRATION (instant recalc, no calc button)
+   ============================================================ */
+function refreshAll(){renderContext();renderVoyageInputs();renderVoyageResult();renderBoard();renderMapStack();renderAnalyzeSelect();renderAnalysis();renderFixings();syncFixClass();
+  if(mapReady){drawPorts();drawRoute();}renderMapHud();}
+function refreshAllExceptDB(){renderContext();renderVoyageInputs();renderVoyageResult();renderBoard();renderMapStack();renderAnalyzeSelect();renderAnalysis();renderFixings();syncFixClass();
+  if(mapReady){drawPorts();drawRoute();}renderMapHud();}
+function syncFixClass(){ if(activeTab==='fixings') renderFixPreview(); }
+let activeTab='map';
+function refreshActive(){
+  if(activeTab==='voyages'){renderVoyageResult();}
+  else if(activeTab==='analysis'){renderAnalysis();}
+}
+
+/* ============================================================
+   SETTINGS UI SYNC
+   ============================================================ */
+function syncSettingsUI(){
+  $('defWs').value=state.ws;$('defInc').value=state.inc;$('defCount').value=state.count;
+  $('aiEnable').checked=state.ai.enabled;$('aiEndpoint').value=state.ai.endpoint;$('aiModel').value=state.ai.model;
+  $('selInc').value=state.inc;$('selCount').value=state.count;
+}
+
+/* ============================================================
+   EVENT WIRING
+   ============================================================ */
+function wire(){
+  // nav
+  $('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return; goTab(b.dataset.tab);});
+
+  // ---- voyage builder ----
+  $('selVessel').addEventListener('change',e=>selectVessel(e.target.value));
+  $('selPreset').addEventListener('change',e=>loadPreset(e.target.value));
+  $('selLoad').addEventListener('change',e=>setLoad(e.target.value));
+  $('selDisch').addEventListener('change',e=>setDisch(e.target.value));
+  $('selOrigin').addEventListener('change',e=>setOrigin(e.target.value));
+  $('selAddLoad').addEventListener('change',e=>{addLoadPort(e.target.value);e.target.value='';});
+  $('selAddDisch').addEventListener('change',e=>{addDischPort(e.target.value);e.target.value='';});
+  $('extraPorts').addEventListener('click',e=>{const l=e.target.closest('[data-rmload]');if(l){removeLoadPort(l.dataset.rmload);return;}const d=e.target.closest('[data-rmdisch]');if(d){removeDischPort(d.dataset.rmdisch);}});
+  $('rtToggle').addEventListener('change',e=>toggleRoundTrip(e.target.checked));
+  $('inDist').addEventListener('input',e=>{state.distance=+e.target.value||0;state.distAuto=false;refreshAllExceptDB();});
+  $('btnRecalcDist').addEventListener('click',recompDistance);
+  $('inCargo').addEventListener('input',e=>{state.cargo=+e.target.value||0;state.presetId=null;refreshAllExceptDB();});
+  $('inCanal').addEventListener('input',e=>{state.canalCost=+e.target.value||0;refreshAllExceptDB();});
+  $('inBallastDist').addEventListener('input',e=>{state.ballastDistance=+e.target.value||0;refreshAllExceptDB();});
+  $('viaToggle').addEventListener('click',e=>{const b=e.target.closest('[data-via]');if(!b)return;state.via=b.dataset.via;refreshAll();});
+  $('btnClear').addEventListener('click',clearVoyage);
+  $('btnChain').addEventListener('click',chainVoyage);
+  $('btnAddBoard').addEventListener('click',addToBoard);
+  $('btnClearBoard').addEventListener('click',clearBoard);
+  $('boardList').addEventListener('click',e=>{const b=e.target.closest('[data-rmboard]');if(b)removeBoard(b.dataset.rmboard);});
+
+  // ---- fixings ----
+  $('btnSaveFix').addEventListener('click',saveFixing);
+  $('btnFixTake').addEventListener('click',takeFromCalc);
+  $('fixVessel').addEventListener('input',e=>{fixDraft.vesselName=e.target.value;});
+  $('fixClass').addEventListener('change',e=>{fixDraft.vesselId=e.target.value;renderFixPreview();});
+  $('fixCp').addEventListener('change',e=>{fixDraft.cpDate=e.target.value;});
+  $('fixLoad').addEventListener('change',e=>{fixDraft.loadId=e.target.value||null;fixDraft.loadIds2=[];fixDraft.distance=0;renderFixPreview();});
+  $('fixDisch').addEventListener('change',e=>{fixDraft.dischId=e.target.value||null;fixDraft.dischIds2=[];fixDraft.distance=0;renderFixPreview();});
+  $('fixCargo').addEventListener('input',e=>{fixDraft.cargo=+e.target.value||0;renderFixPreview();});
+  $('fixWs').addEventListener('input',e=>{fixDraft.ws=+e.target.value||0;renderFixPreview();});
+  $('fixNote').addEventListener('input',e=>{fixDraft.note=e.target.value;});
+  $('fixList').addEventListener('click',e=>{
+    const m=e.target.closest('[data-fixmap]');if(m){toggleFixingMap(m.dataset.fixmap);return;}
+    const l=e.target.closest('[data-fixload]');if(l){loadFixing(l.dataset.fixload);return;}
+    const d=e.target.closest('[data-fixdel]');if(d){deleteFixing(d.dataset.fixdel);return;}
+  });
+
+  // ---- market ----
+  $('inWs').addEventListener('input',e=>{state.ws=+e.target.value||0;refreshAllExceptDB();});
+  $('inFlat').addEventListener('input',e=>{state.flat=+e.target.value||0;if(state.presetId)DB.flats[state.presetId]=state.flat;refreshAllExceptDB();});
+  $('inAddComm').addEventListener('input',e=>{state.addComm=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
+  $('inBrkComm').addEventListener('input',e=>{state.brokerComm=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
+
+  // ---- market ----
+  $('inWs').addEventListener('input',e=>{state.ws=+e.target.value||0;refreshAllExceptDB();});
+  $('inFlat').addEventListener('input',e=>{state.flat=+e.target.value||0;if(state.presetId)DB.flats[state.presetId]=state.flat;refreshAllExceptDB();});
+  $('inAddComm').addEventListener('input',e=>{state.addComm=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
+  $('inBrkComm').addEventListener('input',e=>{state.brokerComm=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
+  $('selBunker').addEventListener('change',e=>{state.bunkerId=e.target.value;const b=byId(DB.bunkers,e.target.value);if(b)state.bunkerPrice=b.price;refreshAll();});
+  $('inBunker').addEventListener('input',e=>{state.bunkerPrice=+e.target.value||0;const b=byId(DB.bunkers,state.bunkerId);if(b)b.price=state.bunkerPrice;refreshAllExceptDB();});
+  document.querySelectorAll('[data-ws]').forEach(btn=>btn.addEventListener('click',()=>{
+    state.ws=Math.max(0,+(state.ws+ +btn.dataset.ws).toFixed(2));$('inWs').value=state.ws;refreshAllExceptDB();}));
+
+  // ---- analysis ----
+  $('selAnalyze').addEventListener('change',e=>setAnalyze(e.target.value));
+  $('selInc').addEventListener('change',e=>{state.inc=+e.target.value;renderAnalysis();});
+  $('selCount').addEventListener('change',e=>{state.count=+e.target.value;renderAnalysis();});
+  $('rankToggle').addEventListener('click',e=>{const b=e.target.closest('[data-rank]');if(!b)return;
+    rankKey=b.dataset.rank;document.querySelectorAll('#rankToggle button').forEach(x=>x.classList.toggle('on',x===b));renderAnalysis();});
+
+  // AI enhance (delegated)
+  document.querySelector('.content').addEventListener('click',e=>{const b=e.target.closest('[data-enhance]');if(b)enhanceAI(b.dataset.enhance);});
+
+  // map popups (delegated on document — popups render in the map pane)
+  document.addEventListener('click',e=>{
+    const l=e.target.closest('[data-setload]');if(l){setEndpoint('load',l.dataset.setload);return;}
+    const d=e.target.closest('[data-setdisch]');if(d){setEndpoint('disch',d.dataset.setdisch);return;}
+    const o=e.target.closest('[data-setorigin]');if(o){setEndpoint('origin',o.dataset.setorigin);return;}
+    const al=e.target.closest('[data-addload]');if(al){addLoadPort(al.dataset.addload);if(map)map.closePopup();toast('Added load call');return;}
+    const ad=e.target.closest('[data-adddisch]');if(ad){addDischPort(ad.dataset.adddisch);if(map)map.closePopup();toast('Added discharge call');return;}
+  });
+
+  // settings: defaults
+  $('defWs').addEventListener('input',e=>{state.ws=+e.target.value||0;$('inWs').value=state.ws;refreshAllExceptDB();});
+  $('defInc').addEventListener('change',e=>{state.inc=+e.target.value;$('selInc').value=state.inc;renderAnalysis();});
+  $('defCount').addEventListener('change',e=>{state.count=+e.target.value;$('selCount').value=state.count;renderAnalysis();});
+  // AI settings
+  $('aiEnable').addEventListener('change',e=>{state.ai.enabled=e.target.checked;refreshAllExceptDB();toast(e.target.checked?'Ollama enabled':'Deterministic only');});
+  $('aiEndpoint').addEventListener('input',e=>state.ai.endpoint=e.target.value.trim());
+  $('aiModel').addEventListener('input',e=>state.ai.model=e.target.value.trim());
+
+  // DB editor
+  $('dbToggle').addEventListener('click',e=>{const b=e.target.closest('[data-db]');if(!b)return;
+    dbTab=b.dataset.db;document.querySelectorAll('#dbToggle button').forEach(x=>x.classList.toggle('on',x===b));renderDB();});
+  $('dbArea').addEventListener('input',e=>{const t=e.target;if(t.dataset.row)editField(t.dataset.row,t.dataset.field,t.dataset.type,t.value);});
+  $('dbArea').addEventListener('click',e=>{const d=e.target.closest('[data-del]');if(d)delRow(d.dataset.del);});
+  $('addArea').addEventListener('click',e=>{if(e.target.closest('#btnAdd'))addRow();});
+  $('btnExport').addEventListener('click',exportDB);
+  $('btnImport').addEventListener('click',()=>$('fileImport').click());
+  $('fileImport').addEventListener('change',e=>{if(e.target.files[0])importDB(e.target.files[0]);e.target.value='';});
+
+  // theme
+  const tb=$('btnTheme'); if(tb) tb.addEventListener('click',toggleTheme);
+  const tt=$('themeToggle'); if(tt) tt.addEventListener('click',e=>{const b=e.target.closest('[data-theme]');if(b)applyTheme(b.dataset.theme);});
+
+  // map clear
+  const mc=$('btnMapClear'); if(mc) mc.addEventListener('click',clearVoyage);
+
+  // map voyage panel (top-right)
+  const mvsel=$('mapVessel'); if(mvsel) mvsel.addEventListener('change',e=>selectVessel(e.target.value));
+  const bvn=$('btnVoyNext'); if(bvn) bvn.addEventListener('click',chainVoyage);
+  const bve=$('btnVoyEnd'); if(bve) bve.addEventListener('click',endVoyage);
+  const bfs=$('btnFixShow'); if(bfs) bfs.addEventListener('click',toggleAllFixings);
+  const mp=$('mapPanel'); if(mp) mp.addEventListener('click',e=>{
+    if(e.target.closest('#msClear')){clearBoard();return;}
+    const x=e.target.closest('[data-rmboard]');if(x){removeBoard(x.dataset.rmboard);return;}
+    const f=e.target.closest('[data-focus]');if(f){focusBoard(f.dataset.focus);return;}
+  });
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function launchApp(){
+  try{
+    const name=($('homeUser').value||'').trim();
+    state.user=name;
+    if(name){const ut=$('userTag');ut.innerHTML=`<b>${name}</b>`;ut.classList.add('show');}
+  }catch(e){}
+  // always dismiss the overlay, even if something above failed
+  const home=$('home'); if(home){home.classList.add('hidden');}
+  // the app (incl. the map) is only truly visible now → init + size it here
+  try{ initMap(); kickMap(); renderMapHud(); }catch(e){}
+}
+function boot(){
+  // 0) apply saved theme immediately so first paint uses the right palette
+  let th='dark'; try{const s=localStorage.getItem('av-theme'); if(s==='light'||s==='dark') th=s;}catch(e){}
+  try{ applyTheme(th); }catch(e){}
+  // 1) wire the launch controls FIRST so the home screen can always be dismissed
+  const lb=$('homeLaunch'); if(lb) lb.addEventListener('click',launchApp);
+  const hu=$('homeUser'); if(hu) hu.addEventListener('keydown',e=>{if(e.key==='Enter')launchApp();});
+  // 2) everything else is guarded — a failure here must not trap the user on the home screen
+  try{
+    if(state.presetId&&DB.flats[state.presetId]!=null)state.flat=DB.flats[state.presetId];
+    const bk=byId(DB.bunkers,state.bunkerId);if(bk)state.bunkerPrice=bk.price;
+    wire();
+    setTimeout(()=>{try{hu&&hu.focus();}catch(e){}},200);
+    refreshAll();
+    syncSettingsUI();
+    // attempt an early map init too (covers the case where the user lingers on the map behind the overlay)
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ try{ initMap(); kickMap(); }catch(e){} }));
+  }catch(err){ try{toast('Init issue: '+err.message);}catch(e){} }
+}
+if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
+</script>
+</body>
+</html>
