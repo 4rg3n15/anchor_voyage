@@ -278,6 +278,52 @@
   .map-clear:active{transform:scale(.96);background:var(--deck-2)}
 
   /* voyage stack panel (top-right of map) */
+  .ai-insights{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+  .ai-ins{background:var(--deck);border:1px solid var(--line);border-radius:10px;padding:10px 11px}
+  .ai-ins .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:5px}
+  .ai-ins .v{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--ink)} .ai-ins .v.pos{color:var(--profit)} .ai-ins .v.neg{color:var(--loss)}
+  .ai-ins .s{font-size:10.5px;color:var(--ink-dim);margin-top:3px;line-height:1.35}
+  .ai-chat{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:4px 2px 8px}
+  .ai-msg{display:flex} .ai-msg.user{justify-content:flex-end}
+  .ai-msg .b{max-width:84%;padding:8px 11px;border-radius:12px;font-size:12.5px;line-height:1.45;word-break:break-word}
+  .ai-msg.user .b{background:var(--glow);color:#05140d;border-bottom-right-radius:4px}
+  .ai-msg.bot .b{background:var(--deck);border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:4px}
+  .ai-msg.bot .b i{color:var(--ink-faint)}
+  .ai-chat-in{display:flex;gap:7px;margin-top:6px} .ai-chat-in .input{flex:1}
+  .ai-chat-sug{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .ai-sug{font-family:var(--mono);font-size:10px;padding:5px 9px;border-radius:20px;border:1px solid var(--line-2);background:var(--chip);color:var(--ink-dim)}
+  .ai-sug:active{color:var(--glow);border-color:var(--glow)}
+  .zone-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:.03em;text-align:center;white-space:nowrap;padding:1px 4px;border-radius:3px;opacity:.9}
+  .zone-tag.war{color:#ff4d6d;background:rgba(255,77,109,.14)}
+  .zone-tag.danger{color:#ff8a3d;background:rgba(255,138,61,.14)}
+  .zone-tag.canal{color:#7a8cff;background:rgba(122,140,255,.14)}
+  .risk-warn{display:flex;flex-direction:column;gap:5px;margin:11px 0 0}
+  .risk-warn .rw{display:flex;align-items:flex-start;gap:7px;padding:7px 9px;border-radius:8px;font-size:11.5px;line-height:1.35}
+  .risk-warn .rw.war{border:1px solid rgba(255,77,109,.5);background:rgba(255,77,109,.08);color:#ff8095}
+  .risk-warn .rw.danger{border:1px solid rgba(255,138,61,.5);background:rgba(255,138,61,.08);color:#ffae6e}
+  .risk-warn .rw.canal{border:1px solid rgba(122,140,255,.5);background:rgba(122,140,255,.08);color:#9aa8ff}
+  .map-voycard{background:var(--deck);border:1px solid var(--line-2);border-radius:10px;padding:9px 10px;margin-bottom:2px}
+  .mvc-top{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+  .mvc-sw{width:7px;height:16px;border-radius:3px;flex:0 0 auto}
+  .mvc-nm{flex:1;min-width:0;font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mvc-x{flex:0 0 auto;color:var(--ink-faint);font-size:16px;line-height:1;width:16px}
+  .mvc-x:hover{color:var(--loss)}
+  .mvc-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;margin-bottom:7px}
+  .mvc-c{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .mvc-c span{font-family:var(--mono);font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint)}
+  .mvc-c b{font-size:10.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mvc-perf{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;padding-top:7px;border-top:1px solid var(--line);margin-bottom:8px}
+  .mvc-p{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+  .mvc-p span{font-family:var(--mono);font-size:9px;color:var(--ink-faint)}
+  .mvc-p b{font-family:var(--mono);font-size:10.5px;color:var(--ink)} .mvc-p b.pos{color:var(--profit)} .mvc-p b.neg{color:var(--loss)}
+  .mvc-acts{display:flex;gap:5px}
+  .mvc-b{flex:1;font-family:var(--mono);font-size:9.5px;padding:6px 3px;border-radius:7px;border:1px solid var(--line-2);background:var(--chip);color:var(--ink-dim)}
+  .mvc-b:active{color:var(--glow);border-color:var(--glow)}
+  .voy-viewtag{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-2px 0 11px;padding:6px 10px;
+    border:1px solid var(--glow);border-radius:8px;background:rgba(63,224,141,.08);font-size:11.5px;color:var(--ink)}
+  .voy-viewtag .vvt-x{font-family:var(--mono);font-size:10px;color:var(--glow);border:1px solid var(--line-2);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  .board-row{cursor:pointer;transition:border-color .14s,background .14s}
+  .board-row.cur{border-color:var(--glow);background:rgba(63,224,141,.06)}
   .map-panel{position:absolute;right:12px;top:116px;z-index:21;width:216px;max-width:56vw;background:var(--bar);
     backdrop-filter:blur(14px);border:1px solid var(--line-2);border-radius:12px;padding:8px 9px;
     box-shadow:0 10px 34px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:7px;max-height:70vh}
@@ -601,6 +647,7 @@
           <div class="hg"><div class="k">TCE</div><div class="v mono" id="hudTce">—</div></div>
           <div class="hg"><div class="k">Profit</div><div class="v mono" id="hudProfit">—</div></div>
         </div>
+        <div class="risk-warn" id="hudRisk"></div>
       </div>
       <div class="map-legend">
         <div class="ll"><span class="seg laden"></span> Laden</div>
@@ -609,8 +656,9 @@
         <div class="ll"><span class="dot" style="background:var(--profit);box-shadow:0 0 6px var(--profit)"></span> Discharge</div>
         <div class="ll"><span class="dot" style="background:var(--amber);box-shadow:0 0 6px var(--amber)"></span> Hub</div>
       </div>
-      <button class="map-clear" id="btnMapClear" title="Clear the current voyage">✕ Clear</button>
+      <button class="map-clear" id="btnMapClear" title="Clear the map planning voyage">✕ Clear</button>
       <div class="map-panel" id="mapPanel">
+        <div class="map-voycard" id="mapVoyCard" style="display:none"></div>
         <label class="mp-vsel"><span>Vessel class</span><select id="mapVessel"></select></label>
         <div class="mp-stage">
           <button class="mp-btn next" id="btnVoyNext" title="Fix this leg and start the next, ballasting from its discharge">＋ Voy</button>
@@ -690,6 +738,14 @@
           <label class="fld"><span>Address comm · %</span><input class="input mono" id="inAddComm" type="number" inputmode="decimal" step="0.25"></label>
           <label class="fld"><span>Broker comm · %</span><input class="input mono" id="inBrkComm" type="number" inputmode="decimal" step="0.25"></label>
         </div>
+        <div class="eyebrow" style="margin:14px 0 7px"><span class="tick" style="background:#ff4d6d"></span>War risk &amp; danger zones <span class="via-tag">optional</span></div>
+        <label class="fld"><span>War-risk premium · AWRP ($ lump)</span>
+          <input class="input mono" id="inAwrp" type="number" inputmode="numeric" placeholder="0"></label>
+        <div class="row2">
+          <label class="fld"><span>Danger-zone days</span><input class="input mono" id="inDangerDays" type="number" inputmode="decimal" step="0.5" placeholder="0"></label>
+          <label class="fld"><span>Danger cost · $/day</span><input class="input mono" id="inDangerRate" type="number" inputmode="numeric" placeholder="0"></label>
+        </div>
+        <div class="risk-warn" id="voyRisk"></div>
         <div class="row2">
           <label class="fld"><span>Bunker hub</span><select class="input" id="selBunker"></select></label>
           <label class="fld"><span>VLSFO $/mt · editable</span><input class="input mono" id="inBunker" type="number" inputmode="decimal"></label>
@@ -698,6 +754,7 @@
 
       <div class="panel">
         <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Voyage result</div>
+        <div class="voy-viewtag" id="voyViewTag" style="display:none"></div>
         <div class="hero-tce">
           <div><div class="big mono" id="rTce">—</div></div>
           <div class="unit">USD / day · TCE</div>
@@ -723,9 +780,12 @@
 
       <div class="panel">
         <div class="eyebrow"><span class="tick"></span>Voyage board <span id="boardCount" class="via-tag"></span></div>
+        <div class="sub-label" style="margin:-2px 0 9px">Tap a voyage to load its calculation on the left. Voyages only arrive here when you send them — nothing transfers on its own.</div>
+        <div class="btn-row" style="margin-bottom:10px"><button class="btn" id="btnImportMap" style="flex:1">⇤ Import current Map voyage</button></div>
         <div id="boardList"></div>
         <div class="btn-row" id="boardActions" style="display:none">
-          <button class="btn" id="btnClearBoard">✕ Clear board</button>
+          <button class="btn primary" id="btnCombined" style="flex:1.4">▣ Show Combined Program</button>
+          <button class="btn" id="btnClearBoard">✕ Clear</button>
         </div>
       </div>
 
@@ -915,6 +975,26 @@
         <p style="font-size:12.5px;color:var(--ink-dim);line-height:1.6;margin:0">Deterministic voyage economics · AI for commentary only · fully functional offline of the AI module.<br><span class="mono" style="font-size:10.5px;color:var(--ink-faint);letter-spacing:.08em">Anchor Voyage · built for the tanker desk · Anchor Maritime</span></p>
       </div>
     </section>
+
+    <section class="screen" id="screen-ai">
+      <div class="panel an-subject">
+        <div class="eyebrow accent"><span class="tick" style="background:var(--glow)"></span>Anchor AI <span class="via-tag" id="aiStateTag"></span></div>
+        <div class="sub-label">Desk insights computed live from your voyages and board — always on. The chat is optional and runs on your local model (set it in Settings); the figures it discusses always come from the deterministic engine, never invented.</div>
+      </div>
+      <div class="panel">
+        <div class="eyebrow"><span class="tick"></span>Live desk insights</div>
+        <div class="ai-insights" id="aiInsights"></div>
+      </div>
+      <div class="panel" id="aiChatPanel">
+        <div class="eyebrow"><span class="tick" style="background:var(--glow)"></span>Ask Anchor AI</div>
+        <div class="ai-chat" id="aiChatLog"></div>
+        <div class="ai-chat-in">
+          <input class="input" id="aiChatInput" placeholder="Ask about your voyages, board, or market…" autocomplete="off">
+          <button class="btn primary" id="aiChatSend">Send</button>
+        </div>
+        <div class="ai-chat-sug" id="aiChatSug"></div>
+      </div>
+    </section>
   </div>
 
   <nav class="nav" id="nav">
@@ -922,6 +1002,7 @@
     <button data-tab="voyages"><svg viewBox="0 0 24 24"><path d="M3 18s2-1 4-1 4 1 6 0 4-1 6-1M5 9l7-3 7 3M12 6v9M6 11v5M18 11v5"/></svg>Voyages</button>
     <button data-tab="analysis"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 14l3-4 3 3 5-7"/></svg>Analysis</button>
     <button data-tab="fixings"><svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-6-3-6 3V2Z"/><path d="M9 7h6M9 11h6"/></svg>Fixings</button>
+    <button data-tab="ai"><svg viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 1 4 4 4 4 0 0 1-1 8H9a4 4 0 0 1-1-8 4 4 0 0 1 4-4Z"/><path d="M9 11h.01M15 11h.01M12 15v3M9 21h6"/></svg>Anchor AI</button>
     <button data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L3.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h5l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1Z"/></svg>Settings</button>
   </nav>
 </div>
@@ -1072,6 +1153,38 @@ const WP={
   floridaStr:[24.3,-81.0],hatteras:[34.5,-74.5],gomex:[27.0,-90.0],usAtlOff:[39.0,-71.0]
 };
 
+/* ───────── risk & canal zones (advisory) ─────────
+   kind: 'war'  → war-risk, suggests an AWRP lump premium
+         'danger' → daily danger-zone cost (user enters days × $/day)
+         'canal'  → transit corridor, suggests a canal fee
+   bbox = [[south,west],[north,east]] ; a voyage "transits" a zone if any route point falls inside. */
+const ZONES=[
+  {id:'hormuz',  name:'MEG Gulf / Strait of Hormuz', kind:'war',    color:'#ff4d6d', bbox:[[23.5,47.5],[30.6,57.0]]},
+  {id:'redsea',  name:'Red Sea / Bab-el-Mandeb / Aden', kind:'danger', color:'#ff8a3d', bbox:[[11.0,32.0],[28.5,48.0]]},
+  {id:'blacksea',name:'Black Sea (war risk)',       kind:'war',    color:'#ff4d6d', bbox:[[40.4,27.0],[47.6,42.2]]},
+  {id:'guinea',  name:'Gulf of Guinea (piracy)',    kind:'danger', color:'#ffb13d', bbox:[[-6.0,-6.0],[7.5,9.5]]},
+  {id:'suez',    name:'Suez Canal',                 kind:'canal',  color:'#7a8cff', bbox:[[29.2,31.9],[31.6,33.1]]},
+  {id:'panama',  name:'Panama Canal',               kind:'canal',  color:'#7a8cff', bbox:[[8.3,-80.3],[9.9,-79.2]]}
+];
+function lonInRange(lon,w,e){ lon=((lon+180)%360+360)%360-180; return lon>=w&&lon<=e; }
+function ptInBbox(p,bb){ return p[0]>=bb[0][0]&&p[0]<=bb[1][0]&&lonInRange(p[1],bb[0][1],bb[1][1]); }
+/* the ordered [lat,lon] points a voyage's route covers (laden + ballast + round-trip), pre-unwrap */
+function routeLatLngs(spec){
+  const ld=loadList(spec), dd=dischList(spec); if(!ld.length||!dd.length) return [];
+  const seq=[...ld,...dd]; const via=(viasFor(ld[0],dd[dd.length-1]).includes(spec.via)?spec.via:'base')||'base';
+  let pts=[];
+  for(let i=0;i<seq.length-1;i++){ const a=byId(DB.ports,seq[i]),b=byId(DB.ports,seq[i+1]); if(a&&b) pts=pts.concat(pathThrough(seaRoute(a,b,via))); }
+  const op=spec.originId?byId(DB.ports,spec.originId):null, first=byId(DB.ports,ld[0]);
+  if(op&&first) pts=pts.concat(pathThrough(seaRoute(op,first,'base')));
+  if(spec.roundTrip){ const lastD=byId(DB.ports,dd[dd.length-1]); if(first&&lastD) pts=pts.concat(pathThrough(seaRoute(lastD,first,'base'))); }
+  return pts;
+}
+/* which zones a voyage transits → [{...zone}] */
+function zoneHits(spec){
+  const pts=routeLatLngs(spec); if(!pts.length) return [];
+  return ZONES.filter(z=>pts.some(p=>ptInBbox(p,z.bbox)));
+}
+
 /* ---------- runtime state (deep copy of seed) ----------
    The "working voyage" is freely editable: any load / discharge / origin port,
    distance, cargo, vessel and market inputs. Presets just quick-fill it.
@@ -1083,13 +1196,23 @@ const state = {
   distance:6050, cargo:270000, ballastDistance:0,
   vesselId:'v_vlcc', ws:95, flat:19.50, bunkerId:'b_fjr', bunkerPrice:595, via:'base', canalCost:0,
   addComm:2.5, brokerComm:1.25,   // address commission + brokerage (% of gross freight)
+  awrpCost:0, dangerDays:0, dangerDayRate:0,   // war-risk premium (lump) + danger-zone days × $/day (all optional)
   loadIds2:[], dischIds2:[],       // EXTRA load / discharge ports (beyond the primary one)
   roundTrip:false,                 // add a return ballast leg (last disch → first load)
   fixings:[],                      // saved fixtures: a voyage + vessel name / class / CP date
   presetId:'r_td3c',          // which preset is loaded (for highlight); null once edited off-preset
   distAuto:false,             // true = laden distance auto-derived from the sea route
   // board of saved voyages + which voyage analysis targets
-  board:[], analyzeId:'work',
+  board:[], analyzeId:'work', mapSel:null,
+  // which board voyage the Voyages calculator is viewing (null = live working voyage)
+  boardView:null,
+  // ── MAP PLANNING VOYAGE ── fully independent of the Voyages calculator above.
+  // Building a route on the map edits THIS; it never touches the calculator unless you import it.
+  map:{ loadId:'rta', dischId:'nbz', originId:null, distance:6050, cargo:270000, ballastDistance:0,
+        ws:95, flat:19.50, bunkerId:'b_fjr', bunkerPrice:595, via:'base', canalCost:0,
+        addComm:2.5, brokerComm:1.25, awrpCost:0, dangerDays:0, dangerDayRate:0, loadIds2:[], dischIds2:[], roundTrip:false, distAuto:false },
+  programVesselId:'v_vlcc',   // vessel chosen on the Map tab: prices the map voyage + the staged program
+  aiChat:[],                   // Anchor AI chat history [{role,text}]
   // analysis controls
   inc:5, count:5,
   user:'',
@@ -1197,7 +1320,14 @@ function compute(spec){
   const portCost=allCallPorts.reduce((s,p)=>s+(p.cost||0),0);
   const canalCost=(viaKey==='base')?Math.max(0,+spec.canalCost||0):0;
 
-  const totalCost=fuelCost+portCost+canalCost;
+  // war-risk / danger-zone costs — AWRP is a lump premium; danger days are user-entered (not speed-derived) × $/day
+  const awrpCost=Math.max(0,+spec.awrpCost||0);
+  const dangerDays=Math.max(0,+spec.dangerDays||0);
+  const dangerDayRate=Math.max(0,+spec.dangerDayRate||0);
+  const dangerCost=dangerDays*dangerDayRate;
+  const warRiskCost=awrpCost+dangerCost;
+
+  const totalCost=fuelCost+portCost+canalCost+warRiskCost;
   const profit=revenue-totalCost;
   const tce=totalDays>0?profit/totalDays:0;
 
@@ -1212,7 +1342,7 @@ function compute(spec){
     grossFreight,netFreight,addComm,brokerComm,addCommAmt,brokerCommAmt,commission,perWsGross,perWsNet,
     viaKey,deviationDays,deviationDist,
     ladenDays,ballastDays,portDays,totalDays,
-    ladenFuel,ballastFuel,totalFuel,fuelCost,portCost,canalCost,totalCost,profit,tce,
+    ladenFuel,ballastFuel,totalFuel,fuelCost,portCost,canalCost,awrpCost,dangerDays,dangerDayRate,dangerCost,warRiskCost,totalCost,profit,tce,
     ballastRatio,ballastPct:ballastRatio*100,effScore,ballastCost,
     name:specName(spec),id:spec.id||'work'};
 }
@@ -1235,11 +1365,57 @@ function workSpec(){return {
   roundTrip:!!state.roundTrip,
   distance:state.distance, cargo:state.cargo, ballastDistance:state.ballastDistance,
   ws:state.ws, flat:state.flat, bunkerId:state.bunkerId, bunkerPrice:state.bunkerPrice, via:state.via, canalCost:state.canalCost,
-  addComm:state.addComm, brokerComm:state.brokerComm};}
+  addComm:state.addComm, brokerComm:state.brokerComm,
+  awrpCost:state.awrpCost, dangerDays:state.dangerDays, dangerDayRate:state.dangerDayRate};}
 function liveOpts(){return workSpec();}                 // back-compat alias
+/* ── the map's own planning voyage (independent of the calculator) ── */
+function mapSpec(){const m=state.map;return {
+  id:'mapplan', vesselId:state.programVesselId, loadId:m.loadId, dischId:m.dischId, originId:m.originId,
+  loadIds:[m.loadId,...(m.loadIds2||[])].filter(Boolean),
+  dischIds:[m.dischId,...(m.dischIds2||[])].filter(Boolean),
+  roundTrip:!!m.roundTrip,
+  distance:m.distance, cargo:m.cargo, ballastDistance:m.ballastDistance,
+  ws:m.ws, flat:m.flat, bunkerId:m.bunkerId, bunkerPrice:m.bunkerPrice, via:m.via, canalCost:m.canalCost,
+  addComm:m.addComm, brokerComm:m.brokerComm,
+  awrpCost:m.awrpCost, dangerDays:m.dangerDays, dangerDayRate:m.dangerDayRate};}
+function recompMapBallast(){ state.map.ballastDistance=(state.map.originId&&state.map.loadId)?estDistance(state.map.originId,state.map.loadId,'base'):0; }
+/* re-render ONLY the map surfaces — never the calculator (that is what keeps the tabs independent) */
+function refreshMap(){ renderMapHud(); renderMapStack(); if(mapReady){drawPorts();drawRoute();} }
+function selectProgramVessel(id){ state.programVesselId=id; refreshMap(); }
+function addMapLoad(id){ if(!id)return; const m=state.map; if(!m.loadId)m.loadId=id; else if(id!==m.loadId&&!(m.loadIds2||[]).includes(id))m.loadIds2=[...(m.loadIds2||[]),id]; m.distAuto=true; recompMapBallast(); refreshMap(); }
+function addMapDisch(id){ if(!id)return; const m=state.map; if(!m.dischId)m.dischId=id; else if(id!==m.dischId&&!(m.dischIds2||[]).includes(id))m.dischIds2=[...(m.dischIds2||[]),id]; m.distAuto=true; recompMapBallast(); refreshMap(); }
+function clearMapPlan(){
+  const m=state.map;
+  m.loadId=null;m.dischId=null;m.originId=null;m.loadIds2=[];m.dischIds2=[];m.roundTrip=false;
+  m.distance=0;m.cargo=0;m.canalCost=0;m.ballastDistance=0;m.via='base';m.distAuto=true;
+  state.mapSel=null; refreshMap(); toast('Map voyage cleared');
+}
+function chainMapVoyage(){
+  const spec=mapSpec();
+  if(!compute(spec)){ toast('Build a voyage on the map first'); return; }
+  spec.id='brd_'+(boardSeq++); spec.label=specName(spec); spec.chained=true; spec.source='Map'; spec.ts=Date.now();
+  state.board.push(spec);
+  const lastDisch=dischList(spec).slice(-1)[0];
+  const m=state.map; m.originId=lastDisch||null;
+  m.loadId=null;m.dischId=null;m.loadIds2=[];m.dischIds2=[];m.roundTrip=false;m.distance=0;m.cargo=0;m.distAuto=true;
+  recompMapBallast(); renderBoard(); renderMapStack(); renderAnalyzeSelect();
+  if(mapReady){drawPorts();drawRoute();} renderMapHud();
+  toast('Voyage stacked — next leg from '+(byId(DB.ports,lastDisch)?byId(DB.ports,lastDisch).name:'discharge'));
+}
+function endMapVoyage(){
+  const spec=mapSpec();
+  if(!compute(spec)){ toast('Build a voyage on the map first (load + discharge)'); return; }
+  spec.id='brd_'+(boardSeq++); spec.label=specName(spec); spec.source='Map'; spec.ts=Date.now();
+  state.board.push(spec);
+  const m=state.map; m.loadId=null;m.dischId=null;m.originId=null;m.loadIds2=[];m.dischIds2=[];m.roundTrip=false;m.distance=0;m.cargo=0;m.distAuto=true;
+  recompMapBallast(); renderBoard(); renderMapStack();
+  if(mapReady){drawPorts();drawRoute();} renderMapHud();
+  toast('Voyage fixed into the stack · V'+state.board.length);
+}
 function analyzeSpec(){
   if(state.analyzeId==='combined') return workSpec();
   if(state.analyzeId==='work') return workSpec();
+  if(state.analyzeId==='map') return mapSpec();
   if(typeof state.analyzeId==='string' && state.analyzeId.indexOf('preset:')===0){
     const r=byId(DB.routes,state.analyzeId.slice(7)); if(r) return presetSpec(r);
   }
@@ -1325,7 +1501,7 @@ function toggleRoundTrip(on){ state.roundTrip=!!on; refreshAll(); }
 function chainVoyage(){
   const spec=workSpec();
   if(!compute(spec)){ toast('Build a voyage first'); return; }
-  spec.id='brd_'+(boardSeq++); spec.label=specName(spec); spec.chained=true;
+  spec.id='brd_'+(boardSeq++); spec.label=specName(spec); spec.chained=true; spec.source='Voyages'; spec.ts=Date.now();
   state.board.push(spec);
   const lastDisch=dischList(spec).slice(-1)[0];          // next voyage ballasts from here
   state.originId=lastDisch||null;
@@ -1341,7 +1517,7 @@ function chainVoyage(){
 function addToBoard(){
   const spec=workSpec();
   if(!compute(spec)){ toast('Pick load + discharge first'); return; }
-  spec.id='brd_'+(boardSeq++); spec.label=specName(spec);
+  spec.id='brd_'+(boardSeq++); spec.label=specName(spec); spec.source='Voyages'; spec.ts=Date.now();
   state.board.push(spec);
   renderBoard(); renderMapStack(); renderAnalyzeSelect();
   if(mapReady){drawPorts();drawRoute();}
@@ -1350,11 +1526,13 @@ function addToBoard(){
 function removeBoard(id){
   state.board=state.board.filter(b=>b.id!==id);
   if(state.analyzeId===id)state.analyzeId='work';
+  if(state.mapSel===id)state.mapSel=null;
+  if(state.boardView===id)state.boardView=null;
   renderBoard(); renderMapStack(); renderAnalyzeSelect(); renderAnalysis();
   if(mapReady){drawPorts();drawRoute();}
 }
 function clearBoard(){
-  state.board=[]; state.analyzeId='work';
+  state.board=[]; state.analyzeId='work'; state.mapSel=null; state.boardView=null;
   renderBoard(); renderMapStack(); renderAnalyzeSelect(); renderAnalysis();
   if(mapReady){drawPorts();drawRoute();}
   toast('Board cleared');
@@ -1362,17 +1540,70 @@ function clearBoard(){
 function focusBoard(id){ state.analyzeId=id; renderAnalyzeSelect(); renderAnalysis(); renderMapStack(); toast('Analysing '+ (byId(state.board,id)?byId(state.board,id).label:'voyage')); }
 function setAnalyze(id){state.analyzeId=id; renderAnalysis();}
 
+/* select a voyage in the map stack: focus its route + show its summary card (does NOT touch other tabs) */
+function mapSelect(id){
+  state.mapSel = (state.mapSel===id) ? null : id;
+  renderMapStack();
+  if(mapReady){ drawPorts(); drawRoute(); }
+}
+/* copy any voyage spec into the Voyages calculator (the only way a voyage reaches the calculator) */
+function loadSpecIntoCalc(s){
+  const ld=loadList(s), dd=dischList(s);
+  state.vesselId=s.vesselId; state.loadId=ld[0]||null; state.dischId=dd[0]||null;
+  state.loadIds2=ld.slice(1); state.dischIds2=dd.slice(1);
+  state.originId=s.originId||null; state.roundTrip=!!s.roundTrip;
+  state.cargo=s.cargo||0; state.distance=s.distance||0; state.ws=s.ws; state.flat=s.flat;
+  state.bunkerId=s.bunkerId; state.bunkerPrice=s.bunkerPrice; state.via=s.via||'base'; state.canalCost=s.canalCost||0;
+  state.addComm=s.addComm; state.brokerComm=s.brokerComm; state.presetId=null; state.distAuto=!(s.distance>0);
+  state.boardView=null;
+  recompBallast(); refreshAll();
+}
+/* explicit transfers from the map stack */
+function sendBoardToCalc(id){ const b=byId(state.board,id); if(!b)return; loadSpecIntoCalc(b); goTab('voyages'); toast('Loaded “'+(b.label||specName(b))+'” into the calculator'); }
+function sendBoardToAnalysis(id){ const b=byId(state.board,id); if(!b)return; state.analyzeId=id; renderAnalyzeSelect(); renderAnalysis(); goTab('analysis'); toast('Sent to Analysis'); }
+
 /* compute a stacked voyage using the vessel chosen on the map (the "program vessel") */
-function progCompute(b){ return compute(Object.assign({},b,{vesselId:state.vesselId})); }
+function progCompute(b){ return compute(Object.assign({},b,{vesselId:state.programVesselId})); }
 /* the floating voyage panel on the map (top-right) */
 function renderMapStack(){
   const mv=$('mapVessel');
-  if(mv) mv.innerHTML=DB.vessels.map(x=>`<option value="${x.id}" ${x.id===state.vesselId?'selected':''}>${x.type} · ${f0(x.dwt)} dwt</option>`).join('');
+  if(mv) mv.innerHTML=DB.vessels.map(x=>`<option value="${x.id}" ${x.id===state.programVesselId?'selected':''}>${x.type} · ${f0(x.dwt)} dwt</option>`).join('');
+  // selected-voyage summary card
+  const card=$('mapVoyCard');
+  if(card){
+    const b=state.mapSel?byId(state.board,state.mapSel):null;
+    if(b){
+      const c=progCompute(b), v=byId(DB.vessels,b.vesselId), idx=state.board.findIndex(x=>x.id===b.id);
+      const op=b.originId?byId(DB.ports,b.originId):(c?c.op:null);
+      card.style.display='block';
+      card.innerHTML=`<div class="mvc-top"><span class="mvc-sw" style="background:${stackColor(idx)}"></span>
+          <span class="mvc-nm">V${idx+1} · ${b.label||specName(b)}</span>
+          <button class="mvc-x" id="mapCardClose" title="Close">×</button></div>
+        <div class="mvc-grid">
+          <div class="mvc-c"><span>Origin</span><b>${op?op.name:'—'}</b></div>
+          <div class="mvc-c"><span>Vessel</span><b>${v?v.type:'—'}</b></div>
+          <div class="mvc-c"><span>Load</span><b>${c?c.lp.name:'—'}</b></div>
+          <div class="mvc-c"><span>Discharge</span><b>${c?c.dp.name:'—'}</b></div>
+        </div>
+        ${c?`<div class="mvc-perf">
+          <div class="mvc-p"><span>Distance</span><b>${f0(c.ladenDist)} NM</b></div>
+          <div class="mvc-p"><span>Voyage days</span><b>${f1(c.totalDays)}</b></div>
+          <div class="mvc-p"><span>Revenue</span><b>${compact(c.grossFreight)}</b></div>
+          <div class="mvc-p"><span>Expenses</span><b>${compact(c.totalCost+c.commission)}</b></div>
+          <div class="mvc-p"><span>Est. profit</span><b class="${c.profit>=0?'pos':'neg'}">${compact(c.profit)}</b></div>
+          <div class="mvc-p"><span>TCE</span><b class="${c.tce>=0?'pos':'neg'}">${usd(c.tce)}/d</b></div>
+        </div>`:''}
+        <div class="mvc-acts">
+          <button class="mvc-b" data-tocalc="${b.id}">⤓ To calculator</button>
+          <button class="mvc-b" data-toana="${b.id}">📊 Analyse</button>
+        </div>`;
+    } else card.style.display='none';
+  }
   const list=$('mapStack'); const n=state.board.length;
   if(list){
     if(!n) list.innerHTML='<div class="ms-empty">No voyages staged yet. Build one below, then <b>＋ Voy</b> to start the next leg, or <b>✓ End voy</b> to fix it here.</div>';
     else list.innerHTML=state.board.map((b,i)=>{
-      const c=progCompute(b), col=stackColor(i), cur=state.analyzeId===b.id;
+      const c=progCompute(b), col=stackColor(i), cur=state.mapSel===b.id;
       return `<div class="ms-row ${cur?'cur':''}" data-focus="${b.id}">
         <span class="ms-sw" style="background:${col}"></span><span class="ms-vn">V${i+1}</span>
         <span class="ms-nm">${b.label||specName(b)}</span>
@@ -1429,6 +1660,7 @@ function goTab(tab){
   if(tab==='analysis'){renderAnalyzeSelect();renderAnalysis();}
   if(tab==='settings'){syncSettingsUI();renderDB();}
   if(tab==='fixings'){renderFixForm();renderFixings();}
+  if(tab==='ai'){renderAnchorAI();}
 }
 
 /* ---------- fixings (saved fixtures under vessel name + CP date) ---------- */
@@ -1534,7 +1766,8 @@ function renderBoard(){
     const viaTag=(b.via&&b.via!=='base')?' · '+viaLabel(b.via,viasFor(loadList(b)[0],dischList(b).slice(-1)[0])):'';
     const nL=loadList(b).length, nD=dischList(b).length;
     const portTag=(nL>1||nD>1)?` · ${nL}L/${nD}D`:''; const rtTag=b.roundTrip?' · round trip':'';
-    return `<div class="cmp">
+    const cur=state.boardView===b.id;
+    return `<div class="cmp board-row ${cur?'cur':''}" data-view="${b.id}">
       <div class="body"><div class="nm">${b.label||specName(b)}</div>
         <div class="sub">${v?v.type:''} · ${c?f0(c.ladenDist):f0(b.distance)} NM · WS ${f1(b.ws)}${portTag}${rtTag}${viaTag}</div></div>
       <div class="figs"><div class="tce ${c&&c.tce>=0?'pos':'neg'}">${c?usd(c.tce):'—'}</div><div class="pf">${c?compact(c.profit):''} profit</div></div>
@@ -1544,9 +1777,11 @@ function renderBoard(){
 function renderAnalyzeSelect(){
   const sel=$('selAnalyze'); if(!sel) return;
   if(state.analyzeId==='combined' && !state.board.length) state.analyzeId='work';
+  if(state.analyzeId==='map' && !compute(mapSpec())) state.analyzeId='work';
   let h=`<option value="work">Working voyage · ${specName(workSpec())}</option>`;
-  if(state.board.length){ h+=`<option value="combined">▣ Combined program · ${state.board.length} voyage${state.board.length>1?'s':''}</option>`;
-    h+='<optgroup label="Staged voyages">';
+  if(compute(mapSpec())) h+=`<option value="map">Map voyage · ${specName(mapSpec())}</option>`;
+  if(state.board.length){ h+=`<option value="combined">▣ Combined program · ${state.board.length} voyage${state.board.length>1?'s':''} (saved board)</option>`;
+    h+='<optgroup label="Saved board · staged voyages">';
     state.board.forEach((b,i)=>{h+=`<option value="${b.id}">V${i+1} · ${b.label||specName(b)}</option>`;}); h+='</optgroup>'; }
   h+='<optgroup label="Preset routes">';
   DB.routes.forEach(r=>{h+=`<option value="preset:${r.id}">${r.name}</option>`;});
@@ -1790,6 +2025,9 @@ function renderVoyageInputs(){
   $('inFlat').value=state.flat;
   $('inAddComm').value=state.addComm;
   $('inBrkComm').value=state.brokerComm;
+  if($('inAwrp'))$('inAwrp').value=state.awrpCost?Math.round(state.awrpCost):'';
+  if($('inDangerDays'))$('inDangerDays').value=state.dangerDays||'';
+  if($('inDangerRate'))$('inDangerRate').value=state.dangerDayRate?Math.round(state.dangerDayRate):'';
   $('selBunker').innerHTML=DB.bunkers.map(b=>`<option value="${b.id}" ${b.id===state.bunkerId?'selected':''}>${b.port} ${b.fuel}</option>`).join('');
   $('inBunker').value=state.bunkerPrice;
   // cargo warning
@@ -1799,7 +2037,11 @@ function renderVoyageInputs(){
 }
 
 function renderVoyageResult(){
-  const c=compute(workSpec());
+  if(state.boardView==='combined' && !state.board.length) state.boardView=null;
+  renderVoyViewTag();
+  if(state.boardView==='combined'){ renderVoyResultCombined(); return; }
+  const spec = (state.boardView && byId(state.board,state.boardView)) ? byId(state.board,state.boardView) : workSpec();
+  const c=compute(spec);
   if(!c){
     $('rTce').textContent='—';$('rTce').className='big mono';
     ['rProfit','rProfit2','rDays','rGross','rAddComm','rBrkComm','rNet','rCost','rFuel','rPort','rCanal','rFuelMt'].forEach(id=>{$(id).textContent='—';$(id).className=$(id).className.replace(/\b(pos|neg)\b/g,'');});
@@ -1825,10 +2067,72 @@ function renderVoyageResult(){
   $('rPort').textContent=usd(c.portCost);
   $('rCanal').textContent=c.canalCost>0?usd(c.canalCost):'—';
   $('rFuelMt').textContent=f0(c.totalFuel)+' mt';
-  const segs=[['var(--glow)',c.fuelCost,'Bunkers'],['var(--amber)',c.portCost,'Port'],['#7a8cff',c.canalCost,'Canal']];
+  const segs=[['var(--glow)',c.fuelCost,'Bunkers'],['var(--amber)',c.portCost,'Port'],['#7a8cff',c.canalCost,'Canal'],['#ff4d6d',c.warRiskCost,'War risk']];
   $('costBar').innerHTML=segs.filter(s=>s[1]>0).map(s=>`<i style="width:${(s[1]/c.totalCost*100)}%;background:${s[0]}"></i>`).join('');
   $('costLegend').innerHTML=segs.filter(s=>s[1]>0).map(s=>`<span><span class="dot" style="background:${s[0]}"></span>${s[2]} ${(s[1]/c.totalCost*100).toFixed(0)}%</span>`).join('');
   renderAI('aiVoyage','Voyage read',voyageCommentary(c),()=>aiPrompt('voyage',c));
+  renderRiskInto('voyRisk',spec,c);
+}
+/* advisory warnings: route transits a war-risk / danger / canal zone but the matching cost is still zero */
+function riskWarnings(spec,c){
+  if(!c) return [];
+  const out=[];
+  zoneHits(spec).forEach(z=>{
+    if(z.kind==='war'   && !(c.awrpCost>0))  out.push({k:'war',   t:`Route transits <b>${z.name}</b> — a war-risk area. Consider adding an AWRP premium.`});
+    else if(z.kind==='danger'&& !(c.dangerCost>0)) out.push({k:'danger',t:`Route transits <b>${z.name}</b> — add danger-zone days × $/day to price the exposure.`});
+    else if(z.kind==='canal' && !(c.canalCost>0))  out.push({k:'canal', t:`Route uses the <b>${z.name}</b> — add a canal fee.`});
+  });
+  return out;
+}
+function renderRiskInto(elId,spec,c){
+  const el=$(elId); if(!el) return;
+  const w=c?riskWarnings(spec,c):[];
+  el.innerHTML=w.length?w.map(x=>`<div class="rw ${x.k}"><span>⚠</span><span>${x.t}</span></div>`).join(''):'';
+}
+/* the "viewing" indicator above the result panel */
+function renderVoyViewTag(){
+  const tag=$('voyViewTag'); if(!tag) return;
+  if(state.boardView==='combined' && state.board.length){
+    tag.style.display='flex';
+    tag.innerHTML=`<span>▣ Combined program · ${state.board.length} voyages</span><button class="vvt-x" data-vvclear="1">← Live voyage</button>`;
+  } else if(state.boardView && byId(state.board,state.boardView)){
+    const b=byId(state.board,state.boardView), idx=state.board.findIndex(x=>x.id===b.id);
+    tag.style.display='flex';
+    tag.innerHTML=`<span>Viewing V${idx+1} · ${b.label||specName(b)}</span><button class="vvt-x" data-vvclear="1">← Live voyage</button>`;
+  } else { tag.style.display='none'; tag.innerHTML=''; }
+}
+/* combined economics of every staged voyage, shown in the result panel (priced on the program vessel) */
+function renderVoyResultCombined(){
+  const rows=state.board.map(b=>progCompute(b)).filter(Boolean);
+  let gross=0,add=0,brk=0,net=0,cost=0,fuel=0,port=0,canal=0,prof=0,days=0,fuelMt=0,war=0;
+  rows.forEach(c=>{gross+=c.grossFreight;add+=c.addCommAmt;brk+=c.brokerCommAmt;net+=c.netFreight;cost+=c.totalCost;fuel+=c.fuelCost;port+=c.portCost;canal+=c.canalCost;war+=(c.warRiskCost||0);prof+=c.profit;days+=c.totalDays;fuelMt+=c.totalFuel;});
+  const tce=days>0?prof/days:0;
+  $('rTce').textContent=usd(tce); $('rTce').className='big mono '+(tce>=0?'pos':'neg');
+  $('rProfit').textContent=usd(prof); $('rProfit').className='mono '+(prof>=0?'pos':'neg');
+  $('rDays').textContent=f1(days);
+  $('rGross').textContent=usd(gross);
+  $('rAddPct').textContent='Σ'; $('rBrkPct').textContent='Σ';
+  $('rAddComm').textContent=add>0?'−'+usd(add):'—';
+  $('rBrkComm').textContent=brk>0?'−'+usd(brk):'—';
+  $('rNet').textContent=usd(net);
+  $('rCost').textContent=usd(cost);
+  $('rProfit2').textContent=usd(prof); $('rProfit2').className='v mono sm '+(prof>=0?'pos':'neg');
+  $('rFuel').textContent=usd(fuel);
+  $('rPort').textContent=usd(port);
+  $('rCanal').textContent=canal>0?usd(canal):'—';
+  $('rFuelMt').textContent=f0(fuelMt)+' mt';
+  const segs=[['var(--glow)',fuel,'Bunkers'],['var(--amber)',port,'Port'],['#7a8cff',canal,'Canal'],['#ff4d6d',war,'War risk']];
+  $('costBar').innerHTML=segs.filter(s=>s[1]>0).map(s=>`<i style="width:${(s[1]/(cost||1)*100)}%;background:${s[0]}"></i>`).join('');
+  $('costLegend').innerHTML=segs.filter(s=>s[1]>0).map(s=>`<span><span class="dot" style="background:${s[0]}"></span>${s[2]} ${(s[1]/(cost||1)*100).toFixed(0)}%</span>`).join('');
+  const vsl=byId(DB.vessels,state.programVesselId);
+  renderAI('aiVoyage','Voyage read',['Combined program across '+state.board.length+' voyages on '+(vsl?vsl.type:'the program vessel')+': blended TCE '+usd(tce)+'/day over '+f1(days)+' days, total profit '+usd(prof)+'.'],null);
+}
+function viewBoard(id){ state.boardView=(state.boardView===id)?null:id; renderVoyageResult(); renderBoard(); }
+function viewCombined(){ if(!state.board.length){toast('No voyages on the board yet');return;} state.boardView=(state.boardView==='combined')?null:'combined'; renderVoyageResult(); renderBoard(); }
+function importFromMap(){
+  const s=mapSpec();
+  if(!compute(s)){ toast('Build a voyage on the Map first (load + discharge)'); return; }
+  loadSpecIntoCalc(s); toast('Imported the Map voyage into the calculator');
 }
 
 let wsChart=null;
@@ -1939,21 +2243,25 @@ function drawWsChart(scn){
 }
 /* combined analysis across all staged voyages, priced on the map's program vessel */
 function renderCombined(){
-  const board=state.board, vsl=byId(DB.vessels,state.vesselId);
+  const board=state.board, vsl=byId(DB.vessels,state.programVesselId);
   if($('cbVessel')) $('cbVessel').textContent=vsl?vsl.type:'—';
   if($('analyzeMeta')) $('analyzeMeta').innerHTML=board.length
-    ? `Combined program · ${board.length} voyage${board.length>1?'s':''} priced on ${vsl?vsl.type:'—'} (vessel set on the Map tab)`
+    ? `Combined program · ${board.length} voyage${board.length>1?'s':''} from the saved voyage board, priced on ${vsl?vsl.type:'—'} (vessel set on the Map tab)`
     : 'No voyages staged yet.';
   const rows=board.map((b,i)=>({i,b,c:progCompute(b),col:stackColor(i)}));
-  let prof=0,days=0,laden=0,ballast=0;
-  rows.forEach(r=>{ if(r.c){prof+=r.c.profit;days+=r.c.totalDays;laden+=r.c.ladenDist;ballast+=(r.c.totalBallast||r.c.ballastDist||0);} });
+  let prof=0,days=0,laden=0,ballast=0,rev=0,cost=0,bdays=0;
+  rows.forEach(r=>{ if(r.c){prof+=r.c.profit;days+=r.c.totalDays;laden+=r.c.ladenDist;ballast+=(r.c.totalBallast||r.c.ballastDist||0);rev+=r.c.grossFreight;cost+=(r.c.totalCost+(r.c.commission||0));bdays+=(r.c.ballastDays||0);} });
   const tce=days>0?prof/days:0;
+  const eff=(laden+ballast)>0?laden/(laden+ballast)*100:0;     // program ballast efficiency: share of total steaming that is laden
   if($('cbTotals')) $('cbTotals').innerHTML=board.length?`
     <div class="cb-t"><div class="k">Blended TCE</div><div class="v ${tce>=0?'pos':'neg'}">${usd(tce)}<small>/day</small></div></div>
     <div class="cb-t"><div class="k">Total profit</div><div class="v ${prof>=0?'pos':'neg'}">${compact(prof)}</div></div>
     <div class="cb-t"><div class="k">Duration</div><div class="v">${f1(days)}<small>days</small></div></div>
+    <div class="cb-t"><div class="k">Total revenue</div><div class="v">${compact(rev)}</div></div>
+    <div class="cb-t"><div class="k">Total expenses</div><div class="v">${compact(cost)}</div></div>
+    <div class="cb-t"><div class="k">Ballast efficiency</div><div class="v ${eff>=60?'pos':eff>=40?'':'neg'}">${f0(eff)}<small>% laden</small></div></div>
     <div class="cb-t"><div class="k">Laden</div><div class="v">${f0(laden)}<small>NM</small></div></div>
-    <div class="cb-t"><div class="k">Ballast</div><div class="v">${f0(ballast)}<small>NM</small></div></div>
+    <div class="cb-t"><div class="k">Ballast</div><div class="v">${f0(ballast)}<small>NM · ${f1(bdays)}d</small></div></div>
     <div class="cb-t"><div class="k">Voyages</div><div class="v">${board.length}</div></div>`
     :'<div class="sub-label">Stage voyages on the Map tab (＋ Voy / ✓ End voy), then return here to see them combined.</div>';
   if($('cbTable')){
@@ -2073,10 +2381,89 @@ async function enhanceAI(elId){
   }
 }
 
+/* ---------- Anchor AI tab ---------- */
+function escHtml(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function renderAnchorAI(){
+  const tag=$('aiStateTag'); if(tag) tag.textContent=state.ai.enabled?('chat · '+state.ai.model):'insights live · chat off';
+  renderAiInsights(); renderAiChat(); renderAiSug();
+}
+function renderAiInsights(){
+  const el=$('aiInsights'); if(!el) return;
+  const cards=[];
+  const wc=compute(workSpec());
+  if(wc){
+    cards.push({k:'Working voyage',v:usd(wc.tce)+'/day',s:`${wc.lp.name} → ${wc.dp.name} · profit ${compact(wc.profit)}`,cls:wc.tce>=0?'pos':'neg'});
+    const be=beWS(wc); if(isFinite(be)) cards.push({k:'Breakeven WS',v:f1(be),s:`vs WS ${f1(wc.ws)} — cushion ${wc.ws-be>=0?'+':''}${f1(wc.ws-be)} pts`,cls:wc.ws-be>=0?'pos':'neg'});
+  }
+  if(state.board.length){
+    const rows=state.board.map(b=>progCompute(b)).filter(Boolean);
+    let prof=0,days=0,laden=0,ball=0; rows.forEach(c=>{prof+=c.profit;days+=c.totalDays;laden+=c.ladenDist;ball+=(c.totalBallast||0);});
+    const tce=days>0?prof/days:0, eff=(laden+ball)>0?laden/(laden+ball)*100:0;
+    cards.push({k:`Program · ${state.board.length} voyage${state.board.length>1?'s':''}`,v:usd(tce)+'/day',s:`blended TCE · total profit ${compact(prof)}`,cls:tce>=0?'pos':'neg'});
+    cards.push({k:'Program ballast eff',v:f0(eff)+'% laden',s:`${f0(laden)} NM laden · ${f0(ball)} NM ballast`,cls:eff>=60?'pos':eff>=40?'':'neg'});
+    const sorted=state.board.map(b=>({b,c:progCompute(b)})).filter(x=>x.c).sort((a,b)=>b.c.tce-a.c.tce);
+    if(sorted.length){ cards.push({k:'Best on board',v:usd(sorted[0].c.tce)+'/day',s:sorted[0].b.label||specName(sorted[0].b),cls:'pos'});
+      if(sorted.length>1){const w=sorted[sorted.length-1]; cards.push({k:'Weakest on board',v:usd(w.c.tce)+'/day',s:w.b.label||specName(w.b),cls:w.c.tce>=0?'':'neg'});} }
+    const flagged=state.board.filter(b=>zoneHits(b).some(z=>z.kind!=='canal'));
+    if(flagged.length) cards.push({k:'War / danger exposure',v:`${flagged.length} of ${state.board.length}`,s:'staged voyages transit a flagged zone',cls:'neg'});
+  } else {
+    cards.push({k:'Program',v:'—',s:'Stage voyages on the Map (＋ Voy / ✓ End voy) to see blended economics',cls:''});
+  }
+  el.innerHTML=cards.map(c=>`<div class="ai-ins"><div class="k">${c.k}</div><div class="v ${c.cls||''}">${c.v}</div><div class="s">${c.s}</div></div>`).join('');
+}
+function renderAiChat(){
+  const el=$('aiChatLog'); if(!el) return;
+  if(!state.aiChat.length){
+    el.innerHTML=`<div class="ai-msg bot"><div class="b">I'm Anchor AI. Ask me to summarise your program, compare voyages, or explain your war-risk exposure — I read straight from your live figures.${state.ai.enabled?'':' <i>Chat replies need a local model (enable it in Settings); the insight cards above always work.</i>'}</div></div>`;
+    return;
+  }
+  el.innerHTML=state.aiChat.map(m=>`<div class="ai-msg ${m.role}"><div class="b">${m.role==='user'?escHtml(m.text):m.text}</div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function renderAiSug(){
+  const el=$('aiChatSug'); if(!el) return;
+  el.innerHTML=['Summarise my program','Best & weakest voyage?','Explain my war-risk exposure','How is my ballast efficiency?'].map(s=>`<button class="ai-sug" data-sug="${s}">${s}</button>`).join('');
+}
+function aiChatContext(){
+  let ctx='DESK STATE (figures pre-calculated by the engine; never invent or recompute):\n';
+  const wc=compute(workSpec());
+  if(wc) ctx+=`Working voyage: ${wc.lp.name}→${wc.dp.name}, ${wc.v.type}, TCE ${usd(wc.tce)}/day, profit ${usd(wc.profit)} over ${f1(wc.totalDays)}d, WS ${f1(wc.ws)}, ballast eff ${wc.effScore}/100.\n`;
+  if(state.board.length){
+    const rows=state.board.map(b=>progCompute(b)).filter(Boolean);
+    let prof=0,days=0; rows.forEach(c=>{prof+=c.profit;days+=c.totalDays;});
+    ctx+=`Board program: ${state.board.length} voyages, blended TCE ${usd(days>0?prof/days:0)}/day, total profit ${usd(prof)} over ${f1(days)}d.\n`;
+    state.board.forEach((b,i)=>{const c=progCompute(b); if(c){const zh=zoneHits(b).filter(z=>z.kind!=='canal').map(z=>z.name); ctx+=`  V${i+1} ${b.label||specName(b)}: TCE ${usd(c.tce)}/day, profit ${usd(c.profit)}${zh.length?', transits '+zh.join(' & '):''}.\n`;}});
+  } else ctx+='Board program: empty.\n';
+  return ctx;
+}
+async function aiChatSend(){
+  const inp=$('aiChatInput'); if(!inp) return;
+  const q=(inp.value||'').trim(); if(!q) return;
+  state.aiChat.push({role:'user',text:q}); inp.value=''; renderAiChat();
+  if(!state.ai.enabled){
+    state.aiChat.push({role:'bot',text:'Chat is off — enable a local model in Settings to talk. The insight cards above are computed live from your voyages and always work.'});
+    renderAiChat(); return;
+  }
+  state.aiChat.push({role:'bot',text:'<span class="spin"></span> thinking…'}); renderAiChat();
+  const prompt=`You are Anchor AI, a tanker shipbroker's analyst inside a voyage-calculator app. Answer using ONLY the desk state below — interpret, compare and advise, but never invent or recalculate numbers. Be concise and commercially sharp (a few sentences).\n\n${aiChatContext()}\nQUESTION: ${q}`;
+  try{
+    const res=await fetch(state.ai.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:state.ai.model,prompt,stream:false})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json(); const txt=(data.response||'').trim();
+    state.aiChat.pop();
+    state.aiChat.push({role:'bot',text:txt?escHtml(txt).replace(/\n+/g,'<br>'):'(no response)'});
+    renderAiChat();
+  }catch(err){
+    state.aiChat.pop();
+    state.aiChat.push({role:'bot',text:'Local model unreachable ('+escHtml(err.message)+'). Check the endpoint & OLLAMA_ORIGINS in Settings.'});
+    renderAiChat();
+  }
+}
+
 /* ============================================================
    MAP
    ============================================================ */
-let map=null, layers={ports:[],routes:[]}, mapReady=false, tileLayer=null;
+let map=null, layers={ports:[],routes:[],zones:[]}, mapReady=false, tileLayer=null;
 const LADEN='#3FE08D', BALLAST='#FF5C7A';   // laden = green, ballast = red
 
 /* ---------- theme (light / dark) ---------- */
@@ -2100,10 +2487,11 @@ function initMap(){
   if(mapReady||map)return;
   if(!window.L){ whenLeaflet(initMap); return; }     // CDN may load late on mobile
   const el=$('map'); if(!el)return;
-  map=L.map(el,{zoomControl:false,attributionControl:false,minZoom:2,maxZoom:9,worldCopyJump:true,
-    tap:true,tapTolerance:18,bounceAtZoomLimits:false}).setView([24,40],3);
+  map=L.map(el,{zoomControl:false,attributionControl:false,minZoom:3,maxZoom:9,worldCopyJump:true,
+    tap:true,tapTolerance:18,bounceAtZoomLimits:false,
+    maxBounds:L.latLngBounds([[-74,-215],[85,215]]),maxBoundsViscosity:0.9}).setView([24,40],3);
   tileLayer=L.tileLayer(tileUrl(),{maxZoom:19,subdomains:'abcd',crossOrigin:true}).addTo(map);
-  drawPorts();drawRoute();mapReady=true;
+  drawZones();drawPorts();drawRoute();mapReady=true;
   kickMap();
   let rz; window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(map)map.invalidateSize();},150);});
   window.addEventListener('orientationchange',()=>{setTimeout(()=>{if(map){map.invalidateSize();if(activeTab==='map')drawRoute();}},250);});
@@ -2111,7 +2499,7 @@ function initMap(){
 function drawPorts(){
   if(!map)return;
   layers.ports.forEach(m=>map.removeLayer(m));layers.ports=[];
-  const wLoads=new Set(loadList(workSpec())), wDischs=new Set(dischList(workSpec())), wo=state.originId;
+  const wLoads=new Set(loadList(mapSpec())), wDischs=new Set(dischList(mapSpec())), wo=state.map.originId;
   const boardPts={}; state.board.forEach(b=>{loadList(b).forEach(id=>boardPts[id]=1);dischList(b).forEach(id=>boardPts[id]=1);if(b.originId)boardPts[b.originId]=1;});
   (state.fixings||[]).filter(f=>f.showOnMap).forEach(f=>{loadList(f.spec).forEach(id=>boardPts[id]=1);dischList(f.spec).forEach(id=>boardPts[id]=1);if(f.spec.originId)boardPts[f.spec.originId]=1;});
   const roleName={L:'Load hub',D:'Discharge',H:'Hub'};
@@ -2210,6 +2598,17 @@ function shipIcon(deg){
   return L.divIcon({className:'',html,iconSize:[32,17],iconAnchor:[16,13]});
 }
 function clearRoutes(){ if(typeof stopFleet==='function')stopFleet(); layers.routes.forEach(l=>map.removeLayer(l)); layers.routes=[]; }
+function drawZones(){
+  if(!map)return;
+  (layers.zones||[]).forEach(z=>map.removeLayer(z)); layers.zones=[];
+  ZONES.forEach(z=>{
+    const r=L.rectangle(z.bbox,{color:z.color,weight:1,opacity:.55,fillColor:z.color,fillOpacity:z.kind==='canal'?.05:.09,dashArray:z.kind==='canal'?'2 4':'5 5',interactive:false});
+    r.addTo(map); layers.zones.push(r);
+    const c=[(z.bbox[0][0]+z.bbox[1][0])/2,(z.bbox[0][1]+z.bbox[1][1])/2];
+    const tag=L.marker(c,{interactive:false,icon:L.divIcon({className:'',html:`<div class="zone-tag ${z.kind}">${z.kind==='war'?'⚠ WAR RISK':z.kind==='danger'?'⚠ DANGER':'⚓ CANAL'}</div>`,iconSize:[88,14],iconAnchor:[44,7]})});
+    tag.addTo(map); layers.zones.push(tag);
+  });
+}
 function drawOne(spec,opts){
   opts=opts||{};
   const ld=loadList(spec), dd=dischList(spec);
@@ -2242,20 +2641,26 @@ function drawOne(spec,opts){
 function drawRoute(){
   if(!map)return;
   clearRoutes();
-  let all=[];
-  state.board.forEach((b,i)=>{ all=all.concat(drawOne(b,{dim:true,color:stackColor(i)})); });                              // stack, colour-coded
-  all=all.concat(drawOne(workSpec(),{}));                                                                                  // working voyage, bright
+  let all=[], selPts=null;
+  state.board.forEach((b,i)=>{
+    const sel=state.mapSel===b.id;
+    const pts=drawOne(b, sel?{}:{dim:true,color:stackColor(i)});      // selected voyage bright, the rest dimmed
+    all=all.concat(pts); if(sel) selPts=pts;
+  });
+  if(!state.mapSel){ all=all.concat(drawOne(mapSpec(),{})); }          // map planning voyage shows only when nothing is selected
   all=all.concat(drawFleet());                                                                                            // saved fixings: live ships on their routes
-  if(all.length){ try{map.fitBounds(L.latLngBounds(all).pad(0.18),{animate:false});}catch(e){} }
+  const fit=(selPts&&selPts.length)?selPts:all;                       // fit to the active voyage when one is selected
+  if(fit.length){ try{map.fitBounds(L.latLngBounds(fit).pad(0.18),{animate:false});}catch(e){} }
 }
 function renderMapHud(){
-  const spec=workSpec(); const c=compute(spec);
+  const spec=mapSpec(); const c=compute(spec);
   if(!c){
     ['hudLoad','hudDisch','hudVessel'].forEach(id=>{const e=$(id);if(e)e.textContent='—';});
     const hv=$('hudVia');if(hv)hv.textContent='';
     if($('hudDist'))$('hudDist').innerHTML='—';
     if($('hudDays'))$('hudDays').innerHTML='—';
     ['hudTce','hudProfit'].forEach(id=>{const e=$(id);if(e){e.textContent='—';e.className='v mono';}});
+    if($('hudRisk'))$('hudRisk').innerHTML='';
     return;
   }
   const ld=loadList(spec), dd=dischList(spec);
@@ -2267,14 +2672,21 @@ function renderMapHud(){
   $('hudDays').innerHTML=f1(c.totalDays)+' <small>d</small>';
   $('hudTce').textContent=compact(c.tce);$('hudTce').className='v mono '+(c.tce>=0?'pos':'neg');
   $('hudProfit').textContent=compact(c.profit);$('hudProfit').className='v mono '+(c.profit>=0?'pos':'neg');
+  renderRiskInto('hudRisk',mapSpec(),c);
 }
 
 /* set load/disch/origin directly from a map popup */
 function setEndpoint(type,portId){
-  if(type==='load')setLoad(portId);
-  else if(type==='disch')setDisch(portId);
-  else if(type==='origin')setOrigin(portId);
+  const m=state.map;
+  if(type==='load'){ m.loadId=portId||null; m.distAuto=true; }
+  else if(type==='disch'){ m.dischId=portId||null; m.distAuto=true; }
+  else if(type==='origin'){ m.originId=portId||null; }
+  if(m.distAuto!==false && m.loadId && m.dischId) m.distance=estDistance(m.loadId,m.dischId,'base');
+  if(!viasFor(m.loadId,m.dischId).includes(m.via)) m.via='base';
+  if(m.loadId && m.dischId && !(+m.cargo>0)){ const v=byId(DB.vessels,state.programVesselId); if(v)m.cargo=v.dwt; }
+  recompMapBallast();
   if(map)map.closePopup();
+  refreshMap();
   const p=byId(DB.ports,portId);
   toast((type==='load'?'Load → ':type==='disch'?'Discharge → ':'Origin → ')+(p?p.name:''));
 }
@@ -2430,7 +2842,13 @@ function wire(){
   $('btnChain').addEventListener('click',chainVoyage);
   $('btnAddBoard').addEventListener('click',addToBoard);
   $('btnClearBoard').addEventListener('click',clearBoard);
-  $('boardList').addEventListener('click',e=>{const b=e.target.closest('[data-rmboard]');if(b)removeBoard(b.dataset.rmboard);});
+  $('boardList').addEventListener('click',e=>{
+    const rm=e.target.closest('[data-rmboard]'); if(rm){removeBoard(rm.dataset.rmboard);return;}
+    const v=e.target.closest('[data-view]'); if(v){viewBoard(v.dataset.view);}
+  });
+  const bc=$('btnCombined'); if(bc) bc.addEventListener('click',viewCombined);
+  const bim=$('btnImportMap'); if(bim) bim.addEventListener('click',importFromMap);
+  const vvt=$('voyViewTag'); if(vvt) vvt.addEventListener('click',e=>{if(e.target.closest('[data-vvclear]')){state.boardView=null;renderVoyageResult();renderBoard();}});
 
   // ---- fixings ----
   $('btnSaveFix').addEventListener('click',saveFixing);
@@ -2460,6 +2878,9 @@ function wire(){
   $('inFlat').addEventListener('input',e=>{state.flat=+e.target.value||0;if(state.presetId)DB.flats[state.presetId]=state.flat;refreshAllExceptDB();});
   $('inAddComm').addEventListener('input',e=>{state.addComm=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
   $('inBrkComm').addEventListener('input',e=>{state.brokerComm=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
+  const _ia=$('inAwrp'); if(_ia)_ia.addEventListener('input',e=>{state.awrpCost=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
+  const _idd=$('inDangerDays'); if(_idd)_idd.addEventListener('input',e=>{state.dangerDays=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
+  const _idr=$('inDangerRate'); if(_idr)_idr.addEventListener('input',e=>{state.dangerDayRate=Math.max(0,+e.target.value||0);refreshAllExceptDB();});
   $('selBunker').addEventListener('change',e=>{state.bunkerId=e.target.value;const b=byId(DB.bunkers,e.target.value);if(b)state.bunkerPrice=b.price;refreshAll();});
   $('inBunker').addEventListener('input',e=>{state.bunkerPrice=+e.target.value||0;const b=byId(DB.bunkers,state.bunkerId);if(b)b.price=state.bunkerPrice;refreshAllExceptDB();});
   document.querySelectorAll('[data-ws]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -2480,8 +2901,8 @@ function wire(){
     const l=e.target.closest('[data-setload]');if(l){setEndpoint('load',l.dataset.setload);return;}
     const d=e.target.closest('[data-setdisch]');if(d){setEndpoint('disch',d.dataset.setdisch);return;}
     const o=e.target.closest('[data-setorigin]');if(o){setEndpoint('origin',o.dataset.setorigin);return;}
-    const al=e.target.closest('[data-addload]');if(al){addLoadPort(al.dataset.addload);if(map)map.closePopup();toast('Added load call');return;}
-    const ad=e.target.closest('[data-adddisch]');if(ad){addDischPort(ad.dataset.adddisch);if(map)map.closePopup();toast('Added discharge call');return;}
+    const al=e.target.closest('[data-addload]');if(al){addMapLoad(al.dataset.addload);if(map)map.closePopup();toast('Added load call');return;}
+    const ad=e.target.closest('[data-adddisch]');if(ad){addMapDisch(ad.dataset.adddisch);if(map)map.closePopup();toast('Added discharge call');return;}
   });
 
   // settings: defaults
@@ -2492,6 +2913,9 @@ function wire(){
   $('aiEnable').addEventListener('change',e=>{state.ai.enabled=e.target.checked;refreshAllExceptDB();toast(e.target.checked?'Ollama enabled':'Deterministic only');});
   $('aiEndpoint').addEventListener('input',e=>state.ai.endpoint=e.target.value.trim());
   $('aiModel').addEventListener('input',e=>state.ai.model=e.target.value.trim());
+  const acs=$('aiChatSend'); if(acs) acs.addEventListener('click',aiChatSend);
+  const aci=$('aiChatInput'); if(aci) aci.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aiChatSend();}});
+  const asg=$('aiChatSug'); if(asg) asg.addEventListener('click',e=>{const b=e.target.closest('[data-sug]'); if(b){const inp=$('aiChatInput'); if(inp){inp.value=b.dataset.sug; aiChatSend();}}});
 
   // DB editor
   $('dbToggle').addEventListener('click',e=>{const b=e.target.closest('[data-db]');if(!b)return;
@@ -2508,17 +2932,20 @@ function wire(){
   const tt=$('themeToggle'); if(tt) tt.addEventListener('click',e=>{const b=e.target.closest('[data-theme]');if(b)applyTheme(b.dataset.theme);});
 
   // map clear
-  const mc=$('btnMapClear'); if(mc) mc.addEventListener('click',clearVoyage);
+  const mc=$('btnMapClear'); if(mc) mc.addEventListener('click',clearMapPlan);
 
   // map voyage panel (top-right)
-  const mvsel=$('mapVessel'); if(mvsel) mvsel.addEventListener('change',e=>selectVessel(e.target.value));
-  const bvn=$('btnVoyNext'); if(bvn) bvn.addEventListener('click',chainVoyage);
-  const bve=$('btnVoyEnd'); if(bve) bve.addEventListener('click',endVoyage);
+  const mvsel=$('mapVessel'); if(mvsel) mvsel.addEventListener('change',e=>selectProgramVessel(e.target.value));
+  const bvn=$('btnVoyNext'); if(bvn) bvn.addEventListener('click',chainMapVoyage);
+  const bve=$('btnVoyEnd'); if(bve) bve.addEventListener('click',endMapVoyage);
   const bfs=$('btnFixShow'); if(bfs) bfs.addEventListener('click',toggleAllFixings);
   const mp=$('mapPanel'); if(mp) mp.addEventListener('click',e=>{
     if(e.target.closest('#msClear')){clearBoard();return;}
     const x=e.target.closest('[data-rmboard]');if(x){removeBoard(x.dataset.rmboard);return;}
-    const f=e.target.closest('[data-focus]');if(f){focusBoard(f.dataset.focus);return;}
+    const tc=e.target.closest('[data-tocalc]');if(tc){sendBoardToCalc(tc.dataset.tocalc);return;}
+    const ta=e.target.closest('[data-toana]');if(ta){sendBoardToAnalysis(ta.dataset.toana);return;}
+    if(e.target.closest('#mapCardClose')){state.mapSel=null;renderMapStack();if(mapReady){drawPorts();drawRoute();}return;}
+    const f=e.target.closest('[data-focus]');if(f){mapSelect(f.dataset.focus);return;}
   });
 }
 
